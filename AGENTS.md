@@ -1,7 +1,6 @@
 Rules for AI coding agents working on AR Boutique. The full rulebook is `docs/RULES.md`. When a rule changes, update both.
 
 ## Project docs
-Read the relevant ones before changing anything.
 - What and why: `docs/PRD.md`
 - How: `docs/ARCHITECTURE.md`
 - Look and feel: `docs/DESIGN.md`
@@ -32,8 +31,7 @@ Read the relevant ones before changing anything.
 
 ## Frontend
 Applies to `src/app/**/*.tsx`, `src/components/**/*.tsx` and `src/features/**/components/**/*.tsx`.
-- Follow the tokens and components in `docs/DESIGN.md`. Don't invent colours, fonts or radii.
-- Theme tokens only: `bg-background`, `text-foreground`, `bg-primary`, `text-muted-foreground`, `bg-secondary`, `bg-accent`, `border-border`, `border-input`, `font-heading`, `font-sans`. No hex codes, arbitrary colour values or font names (`npm run check:tokens` fails on them).
+- Follow `docs/DESIGN.md`: theme tokens only (`bg-primary`, `text-muted-foreground`, `border-input`, `font-heading` and the rest listed there). No hex codes, arbitrary colour values, font names or invented radii (`npm run check:tokens` fails on them).
 - shadcn/ui first, reusable always: see Components below.
 - Server Components by default. Add `"use client"` only for interaction.
 - Components never call Supabase, Stripe, Resend or Cloudinary. Call Server Actions from `features/<domain>/actions.ts`.
@@ -48,7 +46,7 @@ Applies to `src/app/**/*.tsx`, `src/components/**/*.tsx` and `src/features/**/co
 - Disable submit buttons and show a spinner while an action runs.
 
 ### Components
-- Before creating a component, check in this order: `src/components/ui`, then the shadcn registry (`npx shadcn@latest add <name>`: card, badge, sheet, accordion, carousel, navigation-menu, separator, skeleton, table and so on), then our existing components. Build new only when nothing fits, and say why in the plan.
+- Before creating a component, check in this order: `src/components/ui`, then the shadcn registry (`npx shadcn@latest add <name>`: card, badge, sheet, carousel, table and so on), then our existing components. Build new only when nothing fits. Every plan lists the components it reuses and each new one with its reason.
 - Build on primitives: a product card is `Card` + `Badge` + `next/image`, not a new styled `div`. Restyle through `className` or `cva` variants in a wrapper. Never hand-edit `src/components/ui` or copy its markup.
 - Adding a shadcn component needs no approval, unless it installs a new npm package (e.g. carousel adds Embla): ask first.
 - Where components live:
@@ -58,14 +56,13 @@ Applies to `src/app/**/*.tsx`, `src/components/**/*.tsx` and `src/features/**/co
   - `src/features/<domain>/components/`: used by one domain only. Once a second domain needs it, move it to a shared folder.
 - Pages (`src/app/**/page.tsx`) fetch data and compose components; no repeated markup in pages.
 - One job per component, typed props, content passed in as props (never hard-coded copy or data). Split files over about 150 lines.
-- Every plan lists the shadcn and existing components it reuses, and each new component with its reason.
 
 ## Backend
 Applies to `src/services/**`, `src/lib/**`, `src/app/api/**`, `src/features/**/actions.ts`, `src/proxy.ts`, `src/instrumentation*.ts`, `src/sentry.*.config.ts` and `supabase/**`.
 
 ### Structure
 - Database and third-party calls live in `src/services/*` with `import 'server-only'`.
-- Every Server Action and Route Handler: check auth â†’ validate with Zod â†’ call a service â†’ return a typed result.
+- Every Server Action and Route Handler: check auth, then validate with Zod, then call a service, then return a typed result.
 - Orders, stock, returns and refunds change only through Postgres functions that check the current state in one transaction.
 
 ### Auth
@@ -105,7 +102,7 @@ Applies to `src/services/**`, `src/lib/**`, `src/app/api/**`, `src/features/**/a
 - Wrap the reconciliation job in `Sentry.withMonitor()`. Every cron job writes a `job_runs` row.
 
 ## Testing
-Applies to `tests/**`, `supabase/tests/**`, `**/*.test.ts`, `**/*.test.tsx` and `**/*.spec.ts`.
+Applies to `tests/**`, `supabase/tests/**` and `*.test.ts(x)` / `*.spec.ts` files.
 - `docs/TEST_PLAN.md` defines what each area must prove.
 - Unit tests (Vitest) for pure logic: money, VAT, SKU suggestion and validation, return eligibility, cart rules.
 - DB tests (pgTAP) for every RLS policy and Postgres function, including "customer A can't read customer B", "an admin without aal2 is denied", "visitors can't read stock counts", duplicate SKUs in any letter case, and a SKU pointing at another product's colour.
@@ -118,28 +115,35 @@ Applies to `tests/**`, `supabase/tests/**`, `**/*.test.ts`, `**/*.test.tsx` and 
 - Fix failing tests before continuing. Every bug fix adds a test that would have caught it.
 
 ## Git
-- Never run `git add`, `git commit`, `git push`, `git reset`, `git rebase`, `git stash`, `git branch`, `git checkout -b` or `git switch -c` unless I ask for it in that message. When I ask for a commit message or a branch name, only write it.
+- Never run `git add`, `git commit`, `git push`, `git reset`, `git rebase`, `git stash`, `git branch`, `git checkout -b`, `git switch -c` or `gh pr create` unless I ask for it in that message. When I ask for a commit message or a branch name, only write it.
 - Never commit `.env*` files except `.env.example`.
-- To write a commit message, read `git diff --staged`. If nothing is staged, use the unstaged changes and say so. If the changes mix unrelated work, suggest splitting them into small commits.
+- For a commit message, read `git diff --staged` (if nothing is staged, the unstaged changes, and say so). If it mixes unrelated work, suggest splitting it.
 
 ### Branch names
 Format: `<prefix>/TASK-0xx-short-description`. Leave out the task ID only when there's no task.
-- Prefixes: `feature/` (new feature), `bugfix/` (bug fix), `hotfix/` (urgent production fix), `design/` (UI or UX only), `refactor/` (structure, no behaviour change), `test/` (tests only), `doc/` (docs only).
-- Lowercase except the task ID, words separated by hyphens, no spaces or underscores, ideally under 50 characters.
+- Prefixes: `feature/`, `bugfix/`, `hotfix/` (urgent production fix), `design/` (UI or UX only), `refactor/` (no behaviour change), `test/` (tests only), `doc/` (docs only).
+- Lowercase words joined by hyphens (the task ID stays in capitals), no spaces or underscores, under about 50 characters.
 - Describe the main change. No generic words like `update`, `changes`, `stuff` or `misc`.
-- One branch per task, created from the latest `main`. Suggest the name at the start of every task plan, so I can create it before any code is written.
-- Examples: `feature/TASK-012-home-page`, `bugfix/TASK-031-stock-hold-expiry`, `design/TASK-014-mobile-header`, `doc/update-memory`.
+- One branch per task, from the latest `main`. Suggest its name at the start of every task plan.
+- Examples: `feature/TASK-012-home-page`, `bugfix/TASK-031-stock-hold-expiry`.
 
 ### Commit messages
 Format: `<type>(<scope>): <subject>`, a blank line, the body, a blank line, the footer.
 - Header required, scope optional. No line over 100 characters.
 - Types: `feat`, `fix`, `docs`, `style` (formatting only), `refactor`, `perf`, `test`, `chore` (build, tooling, dependencies).
-- Scope: the area changed, e.g. `store`, `home`, `product`, `cart`, `checkout`, `admin`, `stock`, `returns`, `auth`, `db`, `ui`, `theme`, `env`, `docs`.
-- Subject: imperative present tense ("add", not "added" or "adds"), lowercase first letter, no full stop at the end.
-- Body: imperative too; say why the change was made and how it differs from before.
+- Scope: the area changed, e.g. `home`, `cart`, `checkout`, `admin`, `stock`, `db`, `theme`.
+- Subject: imperative ("add", not "added" or "adds"), lowercase first letter, no full stop.
+- Body: imperative; why the change was made and how it differs from before.
 - Footer: `BREAKING CHANGE: <what breaks and how to migrate>`, `Closes #<issue>`, and the TASK-0xx it finishes.
 - Revert: `revert: <header of the reverted commit>`, with the body `This reverts commit <hash>.`
-- Example header: `feat(home): add hero banner and shop by category`
+
+### Pull requests
+- Only when I say "raise pull request": push the current branch and open a PR into `main` with `gh pr create`. Never merge, close or approve a PR, and never push to `main`.
+- First check: everything is committed, the branch is up to date with `main`, and the checks from Testing pass. If not, don't raise it; tell me what's wrong.
+- Title: the commit header format (`feat(home): add hero banner`). Body: the headings in `.github/pull_request_template.md` (What, Why, How, Testing, Screenshots, Anything else) in short, explicit sentences. Explain the change before linking the TASK; never just "see TASK-012".
+- Testing: commands run with results, manual checks, and untested edge cases with their risk. UI changes: screenshots at 375, 768 and 1440.
+- One task per PR; past about 400 changed lines (excluding generated files and lockfiles), suggest splitting. No secrets, keys or customer data anywhere in a PR.
+- If `gh` isn't set up, give me the title and body to paste; otherwise reply with the PR link.
 
 ## After each task, report
 1. Files changed

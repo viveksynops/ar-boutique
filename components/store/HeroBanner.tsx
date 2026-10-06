@@ -3,39 +3,52 @@ import { StoreButton } from "./StoreButton"
 
 interface HeroBannerProps {
   imageSrc: string
-  eyebrow: string
-  title: React.ReactNode
-  description: React.ReactNode
-  buttonText: string
+  eyebrow?: string
+  title?: React.ReactNode
+  description?: React.ReactNode
+  buttonText?: string
 }
 
 export function HeroBanner({ imageSrc, eyebrow, title, description, buttonText }: HeroBannerProps) {
+  const hasText = Boolean(eyebrow || title || description || buttonText)
+
   return (
-    <section className="relative w-full overflow-hidden">
-      <div className="relative h-[600px] w-full md:h-[700px] lg:h-[800px]">
+    <section className="relative w-full">
+      <div className="relative w-full">
         <Image
           src={imageSrc}
           alt={typeof title === "string" ? title : "Hero banner"}
-          fill
-          className="object-cover object-center"
+          width={1920}
+          height={800}
+          className="w-full h-auto"
           priority
         />
-        <div className="absolute inset-0 flex items-center">
-          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md bg-transparent p-6 sm:p-0">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.14em] mb-4 text-primary/80">
-                {eyebrow}
-              </p>
-              <h1 className="font-heading text-[40px] md:text-[60px] leading-[1.1] md:leading-[1.05] tracking-[-0.01em] font-normal mb-6 text-primary">
-                {title}
-              </h1>
-              <p className="text-base text-primary/80 mb-8 max-w-sm">
-                {description}
-              </p>
-              <StoreButton className="px-8">{buttonText}</StoreButton>
+        {hasText && (
+          <div className="absolute inset-0 flex items-center">
+            <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="max-w-md bg-transparent p-6 sm:p-0">
+                {eyebrow && (
+                  <p className="text-[12px] font-semibold uppercase tracking-[0.14em] mb-4 text-primary/80">
+                    {eyebrow}
+                  </p>
+                )}
+                {title && (
+                  <h1 className="font-heading text-[40px] md:text-[60px] leading-[1.1] md:leading-[1.05] tracking-[-0.01em] font-normal mb-6 text-primary">
+                    {title}
+                  </h1>
+                )}
+                {description && (
+                  <p className="text-base text-primary/80 mb-8 max-w-sm">
+                    {description}
+                  </p>
+                )}
+                {buttonText && (
+                  <StoreButton className="px-8">{buttonText}</StoreButton>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   )
