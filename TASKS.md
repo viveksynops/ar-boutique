@@ -66,7 +66,7 @@ Done when: an admin creates a product with colours, photos and sizes, and it's l
 - [ ] TASK-036 Admin stock: colours × sizes grid on the product and a Stock page for every SKU (search, low and out-of-stock filters); on hand, held, available; reason + note; history
 - [ ] TASK-037 Publish checks: a price, at least one visible colour with a photo and at least one active SKU; clear errors in the form
 - [ ] TASK-038 Enable `cacheComponents`; `'use cache'` + `cacheTag` on catalogue reads; `updateTag()` in admin actions
-- [ ] TASK-039 Storefront layout per `docs/DESIGN.md`: announcement bar, header (logo, menu, account, cart), footer, 404 and error pages
+- [x] TASK-039 Storefront layout per `docs/DESIGN.md`: announcement bar, header (logo, menu, account, cart), footer, 404 and error pages
 - [ ] TASK-040 Shop all and category pages: grid with colour swatches, size and colour filters (in-stock SKUs only), Sale filter (Q25), sort, sold-out products last, empty state
 - [ ] TASK-041 Product page: colour picker swaps the photos (shared by every size of that colour), sizes for that colour with live availability, `?colour=` links rendered on the server, Only N left, Final sale label, sticky Add to cart on mobile
 - [ ] TASK-042 E2E: admin creates a category, colours, sizes, a product with two colours, photos, SKUs and stock; the product shows on the storefront; switching colour swaps the photos; a sold-out size can't be added; a duplicate SKU is rejected

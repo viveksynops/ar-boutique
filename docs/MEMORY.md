@@ -15,6 +15,7 @@ Phase 1 Setup and parts of Phase 11 (Home Page) are underway. Next.js scaffolded
 - Folder structure setup (TASK-003)
 - shadcn/ui init with Lyra style and design tokens (TASK-004)
 - Home page components and layout according to the new Sylvie design system (TASK-091)
+- Storefront layout including header, footer, 404 page, metadata, and placeholder pages (TASK-039)
 
 ## Current Task
 TASK-005 src/lib/env.ts: validate every environment variable with Zod
@@ -39,3 +40,4 @@ Implement Zod environment variable validation (TASK-005).
 - 6 Oct 2026: project scaffolded (Next.js, TS, Tailwind v4, shadcn/ui Lyra preset) and design tokens applied
 - 6 Oct 2026: Implemented the storefront home page and updated global typography and theme to match the new Sylvie mockup and plum/gold logo.
 - 6 Oct 2026: Refined the storefront layout: fixed card padding, increased logo prominence, and established the main navigation (Home, Collections, Journal, About, Contact Us).
+- 6 Oct 2026: Created custom 404 page, added SVG favicon, set site metadata, and built 'Coming Soon' placeholder pages for unimplemented nav links (TASK-039 completed).
