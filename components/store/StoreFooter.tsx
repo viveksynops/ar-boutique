@@ -1,5 +1,5 @@
 import Link from "next/link"
-
+import Image from "next/image"
 export function StoreFooter() {
   return (
     <footer className="bg-secondary pt-16 pb-8 border-t border-border mt-16">
@@ -7,7 +7,7 @@ export function StoreFooter() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-1">
             <Link href="/" className="mb-6 inline-block">
-              <img src="/images/logo.svg" alt="AR Boutique" className="h-20 sm:h-24 w-auto" />
+              <Image src="/images/logo.svg" alt="AR Boutique" width={300} height={120} unoptimized className="h-20 sm:h-24 w-auto" />
             </Link>
             <p className="text-[14px] text-muted-foreground leading-relaxed max-w-xs mt-2">
               Timeless style meets modern elegance. Designed for the way you live.

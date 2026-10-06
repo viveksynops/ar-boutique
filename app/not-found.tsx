@@ -14,7 +14,7 @@ export default function NotFound() {
         </p>
         <SectionHeading className="mb-4">Page Not Found</SectionHeading>
         <p className="text-muted-foreground max-w-md mx-auto mb-8">
-          The page you are looking for doesn't exist or has been moved.
+          The page you are looking for doesn&apos;t exist or has been moved.
         </p>
         <Link href="/">
           <StoreButton>Return to Home</StoreButton>

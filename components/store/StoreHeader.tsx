@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Search, User, ShoppingBag, Menu } from "lucide-react"
 
 export function StoreHeader() {
@@ -13,7 +14,7 @@ export function StoreHeader() {
         
         <div className="flex-1 lg:flex-none">
           <Link href="/" className="inline-block">
-            <img src="/images/logo.svg" alt="AR Boutique" className="h-10 sm:h-14 w-auto" />
+            <Image src="/images/logo.svg" alt="AR Boutique" width={300} height={120} unoptimized className="h-10 sm:h-14 w-auto" />
           </Link>
         </div>
 
