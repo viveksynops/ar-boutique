@@ -12,7 +12,7 @@ export interface BlogCardProps {
 export function BlogCard({ title, category, imageSrc, href }: BlogCardProps) {
   return (
     <Link href={href} className="group cursor-pointer block h-full">
-      <Card className="flex flex-col h-full overflow-hidden">
+      <Card className="flex flex-col h-full overflow-hidden pt-0">
         <div className="relative aspect-[4/3] overflow-hidden w-full shrink-0">
           <Image 
             src={imageSrc} 

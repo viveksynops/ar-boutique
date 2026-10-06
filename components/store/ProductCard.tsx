@@ -12,7 +12,7 @@ export interface ProductCardProps {
 
 export function ProductCard({ name, price, imageSrc, href, swatches }: ProductCardProps) {
   return (
-    <Card className="group flex flex-col h-full overflow-hidden">
+    <Card className="group flex flex-col h-full overflow-hidden pt-0">
       <Link href={href} className="relative aspect-[4/5] overflow-hidden bg-muted block shrink-0">
         <Image 
           src={imageSrc} 

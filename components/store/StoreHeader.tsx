@@ -18,11 +18,11 @@ export function StoreHeader() {
         </div>
 
         <nav className="hidden lg:flex flex-1 justify-center gap-8 text-[15px] font-normal">
-          <Link href="/shop/new-in" className="hover:text-muted-foreground transition-colors">New In</Link>
-          <Link href="/shop" className="hover:text-muted-foreground transition-colors">Shop All</Link>
-          <Link href="/shop/dresses" className="hover:text-muted-foreground transition-colors">Dresses</Link>
-          <Link href="/shop/tops" className="hover:text-muted-foreground transition-colors">Tops</Link>
-          <Link href="/shop/sale" className="hover:text-muted-foreground transition-colors">Sale</Link>
+          <Link href="/" className="hover:text-muted-foreground transition-colors">Home</Link>
+          <Link href="/shop" className="hover:text-muted-foreground transition-colors">Collections</Link>
+          <Link href="/journal" className="hover:text-muted-foreground transition-colors">Journal</Link>
+          <Link href="/about" className="hover:text-muted-foreground transition-colors">About</Link>
+          <Link href="/contact" className="hover:text-muted-foreground transition-colors">Contact Us</Link>
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-4">

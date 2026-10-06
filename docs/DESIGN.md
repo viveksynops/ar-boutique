@@ -94,7 +94,7 @@ Built from the logo (plum #5D173A and gold #B49665, received 6 Oct 2026) with wa
 | # | Block | What we build |
 |---|---|---|
 | 1 | Announcement bar | `primary` strip, white uppercase 12px text, centred. Text comes from settings and must match the real policy (e.g. "FREE DELIVERY OVER AED 300 / EASY RETURNS WITHIN 14 DAYS"; Q2, Q6) |
-| 2 | Header | Logo left; menu in the centre (New in, the categories, Sale); account and cart with a count on the right. Mobile: menu button, centred logo, cart. No search or wishlist icons in v1 (Q22, Q25) |
+| 2 | Header | Logo left; menu in the centre (Home, Collections, Journal, About, Contact Us); account and cart with a count on the right. Mobile: menu button, centred logo, cart. No search or wishlist icons in v1 (Q22, Q25) |
 | 3 | Hero banner | Full-width photo with the text on its plain side: eyebrow, two-line title, one line of text, primary button. Mobile: photo first, text below. From `banners` (placement hero) |
 | 4 | Shop by category | Section title, round category photos (160px on desktop, 96px on mobile) with the category names as labels (Sans 500, never uppercase); up to 6 in a row, swipe on mobile. A Sale circle can link to `/shop?sale=1` (Q25) |
 | 5 | New arrivals | The 8 newest products in the product grid, then an outline "View all" button |
