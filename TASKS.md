@@ -139,7 +139,7 @@ Done when: a received return is refunded through Stripe, with a credit note when
 ## Phase 11: Content
 Done when: the admin changes banners, publishes posts, and policy pages are live.
 - [ ] TASK-090 Banners admin: placement (hero or promo), eyebrow, title, text, button, desktop + mobile image, order, on/off
-- [ ] TASK-091 Home page per `docs/DESIGN.md`: hero, shop by category, new arrivals, trust strip, promo banner, latest posts
+- [x] TASK-091 Home page per `docs/DESIGN.md`: hero, shop by category, new arrivals, trust strip, promo banner, latest posts
 - [ ] TASK-092 Blog admin: Tiptap editor, cover image, SEO fields, Draft/Published
 - [ ] TASK-093 Blog list and post pages
 - [ ] TASK-094 Pages: About, Contact, Terms, Privacy, Returns & Refunds, Shipping & Delivery
