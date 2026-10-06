@@ -17,15 +17,9 @@ export default function Home() {
       <StoreHeader />
 
       <main className="flex-1">
-        <HeroBanner
-          imageSrc="/images/hero_banner.jpg"
-          eyebrow="NEW SEASON COLLECTION"
-          title={<>Elevated Style.<br />Everyday You.</>}
-          description={<>Timeless pieces. Modern silhouettes.<br/>Designed to elevate your everyday.</>}
-          buttonText="SHOP NEW ARRIVALS"
-        />
+        <HeroBanner imageSrc="/images/hero_banner.png" />
 
-        <section className="py-16 md:py-24 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section className="pt-16 md:pt-24 pb-8 md:pb-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading className="mb-12">Shop by Category</SectionHeading>
           <div className="flex gap-8 md:gap-12 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar justify-start md:justify-center" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {[
@@ -46,7 +40,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-16 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section className="py-8 md:py-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading className="mb-12">New Arrivals</SectionHeading>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-8 mb-12">
             {[
@@ -72,30 +66,33 @@ export default function Home() {
           </div>
         </section>
 
-        <TrustStrip />
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-16 mb-8 md:mb-12">
+          <div className="flex flex-col w-full gap-6">
+            <TrustStrip />
+            <PromoBanner
+              imageSrc="/images/promo_banner.jpg"
+              eyebrow="LIMITED TIME ONLY"
+              title="Summer Refresh"
+              description="Enjoy up to 30% off selected styles."
+              buttonText="SHOP THE SALE"
+            />
+          </div>
+        </section>
 
-        <PromoBanner
-          imageSrc="/images/promo_banner.jpg"
-          eyebrow="LIMITED TIME ONLY"
-          title="Summer Refresh"
-          description="Enjoy up to 30% off selected styles."
-          buttonText="SHOP THE SALE"
-        />
-
-        <section className="py-16 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+        <section className="pt-8 pb-16 md:pt-12 md:pb-24 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <SectionHeading className="mb-2">From the Journal</SectionHeading>
           <p className="text-[13px] text-muted-foreground mb-12">Discover the latest trends, styling tips, and brand news.</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
              {[
-               { title: "How to transition your wardrobe for the new season", category: "Style Guide" },
-               { title: "Behind the scenes: The making of our latest collection", category: "Brand News" },
-               { title: "5 effortless looks for your next summer getaway", category: "Inspiration" }
+               { title: "How to transition your wardrobe for the new season", category: "Style Guide", img: "/images/cat_outerwear.jpg" },
+               { title: "Behind the scenes: The making of our latest collection", category: "Brand News", img: "/images/hero_banner.jpg" },
+               { title: "5 effortless looks for your next summer getaway", category: "Inspiration", img: "/images/promo_banner.jpg" }
              ].map((post, i) => (
                 <BlogCard
                   key={i}
                   title={post.title}
                   category={post.category}
-                  imageSrc="/images/promo_banner.jpg"
+                  imageSrc={post.img}
                   href="/journal/post-slug"
                 />
              ))}

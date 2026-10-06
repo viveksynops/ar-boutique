@@ -11,27 +11,29 @@ interface PromoBannerProps {
 
 export function PromoBanner({ imageSrc, eyebrow, title, description, buttonText }: PromoBannerProps) {
   return (
-    <section className="py-8 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-16">
-      <div className="relative h-[400px] md:h-[500px] lg:h-[600px] w-full overflow-hidden bg-accent flex items-center justify-end">
+    <div className="flex flex-col md:flex-row w-full h-[320px] md:h-[380px] bg-accent">
+      <div className="relative w-full md:w-[60%] h-full">
         <Image
           src={imageSrc}
           alt={title}
           fill
-          className="object-cover object-left md:w-2/3 md:max-w-[66%]"
+          className="object-cover object-center"
         />
-        <div className="absolute right-0 w-full md:w-1/2 p-8 md:p-16 flex flex-col items-center md:items-start text-center md:text-left z-10 bg-accent/80 md:bg-transparent">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.14em] mb-4 text-primary">
-            {eyebrow}
-          </p>
-          <h2 className="font-heading text-[28px] md:text-[36px] leading-[1.2] md:leading-[1.15] font-normal mb-4 text-primary">
-            {title}
-          </h2>
-          <p className="text-base text-primary/80 mb-8 max-w-sm">
-            {description}
-          </p>
-          <StoreButton className="px-8">{buttonText}</StoreButton>
-        </div>
       </div>
-    </section>
+      <div className="w-full md:w-[40%] h-full p-8 md:p-12 flex flex-col items-center justify-center text-center">
+        <p className="text-[10px] font-semibold uppercase tracking-widest mb-4 text-foreground/70">
+          {eyebrow}
+        </p>
+        <h2 className="font-heading text-[36px] leading-[1.1] font-normal mb-4 text-foreground">
+          {title}
+        </h2>
+        <p className="text-[13px] text-foreground/80 mb-8 max-w-[220px] mx-auto">
+          {description}
+        </p>
+        <StoreButton className="px-8 bg-foreground text-background hover:bg-foreground/90 uppercase tracking-widest text-[11px] font-semibold h-12 rounded-none">
+          {buttonText}
+        </StoreButton>
+      </div>
+    </div>
   )
 }
