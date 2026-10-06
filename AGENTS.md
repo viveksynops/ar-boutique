@@ -34,7 +34,7 @@ Read the relevant ones before changing anything.
 Applies to `src/app/**/*.tsx`, `src/components/**/*.tsx` and `src/features/**/components/**/*.tsx`.
 - Follow the tokens and components in `docs/DESIGN.md`. Don't invent colours, fonts or radii.
 - Theme tokens only: `bg-background`, `text-foreground`, `bg-primary`, `text-muted-foreground`, `bg-secondary`, `bg-accent`, `border-border`, `border-input`, `font-heading`, `font-sans`. No hex codes, arbitrary colour values or font names (`npm run check:tokens` fails on them).
-- Use shadcn/ui primitives from `src/components/ui`, and never hand-edit them: compose or wrap them in our own components.
+- shadcn/ui first, reusable always: see Components below.
 - Server Components by default. Add `"use client"` only for interaction.
 - Components never call Supabase, Stripe, Resend or Cloudinary. Call Server Actions from `features/<domain>/actions.ts`.
 - Forms use React Hook Form with the Zod schema from `features/<domain>/schemas.ts`.
@@ -46,6 +46,19 @@ Applies to `src/app/**/*.tsx`, `src/components/**/*.tsx` and `src/features/**/co
 - Prices always go through `formatAED()` from `src/lib/money.ts`. Never format money by hand.
 - The cart lives in the Zustand store in `features/cart`, one line per SKU. Never calculate payment totals in the browser.
 - Disable submit buttons and show a spinner while an action runs.
+
+### Components
+- Before creating a component, check in this order: `src/components/ui`, then the shadcn registry (`npx shadcn@latest add <name>`: card, badge, sheet, accordion, carousel, navigation-menu, separator, skeleton, table and so on), then our existing components. Build new only when nothing fits, and say why in the plan.
+- Build on primitives: a product card is `Card` + `Badge` + `next/image`, not a new styled `div`. Restyle through `className` or `cva` variants in a wrapper. Never hand-edit `src/components/ui` or copy its markup.
+- Adding a shadcn component needs no approval, unless it installs a new npm package (e.g. carousel adds Embla): ask first.
+- Where components live:
+  - `src/components/ui/`: shadcn only
+  - `src/components/store/`: shared storefront pieces (`StoreButton`, `Container`, `SectionHeading`, `Price`)
+  - `src/components/admin/`: shared admin pieces (`PageHeader`, `DataTable`, `StatusBadge`)
+  - `src/features/<domain>/components/`: used by one domain only. Once a second domain needs it, move it to a shared folder.
+- Pages (`src/app/**/page.tsx`) fetch data and compose components; no repeated markup in pages.
+- One job per component, typed props, content passed in as props (never hard-coded copy or data). Split files over about 150 lines.
+- Every plan lists the shadcn and existing components it reuses, and each new component with its reason.
 
 ## Backend
 Applies to `src/services/**`, `src/lib/**`, `src/app/api/**`, `src/features/**/actions.ts`, `src/proxy.ts`, `src/instrumentation*.ts`, `src/sentry.*.config.ts` and `supabase/**`.
@@ -105,10 +118,17 @@ Applies to `tests/**`, `supabase/tests/**`, `**/*.test.ts`, `**/*.test.tsx` and 
 - Fix failing tests before continuing. Every bug fix adds a test that would have caught it.
 
 ## Git
-- Never run `git add`, `git commit`, `git push`, `git reset`, `git rebase` or `git stash` unless I ask for it in that message. When I ask for a commit message, only write it.
-- One branch per task: `feature/TASK-0xx-short-name` or `fix/short-name`.
+- Never run `git add`, `git commit`, `git push`, `git reset`, `git rebase`, `git stash`, `git branch`, `git checkout -b` or `git switch -c` unless I ask for it in that message. When I ask for a commit message or a branch name, only write it.
 - Never commit `.env*` files except `.env.example`.
 - To write a commit message, read `git diff --staged`. If nothing is staged, use the unstaged changes and say so. If the changes mix unrelated work, suggest splitting them into small commits.
+
+### Branch names
+Format: `<prefix>/TASK-0xx-short-description`. Leave out the task ID only when there's no task.
+- Prefixes: `feature/` (new feature), `bugfix/` (bug fix), `hotfix/` (urgent production fix), `design/` (UI or UX only), `refactor/` (structure, no behaviour change), `test/` (tests only), `doc/` (docs only).
+- Lowercase except the task ID, words separated by hyphens, no spaces or underscores, ideally under 50 characters.
+- Describe the main change. No generic words like `update`, `changes`, `stuff` or `misc`.
+- One branch per task, created from the latest `main`. Suggest the name at the start of every task plan, so I can create it before any code is written.
+- Examples: `feature/TASK-012-home-page`, `bugfix/TASK-031-stock-hold-expiry`, `design/TASK-014-mobile-header`, `doc/update-memory`.
 
 ### Commit messages
 Format: `<type>(<scope>): <subject>`, a blank line, the body, a blank line, the footer.

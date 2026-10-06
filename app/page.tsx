@@ -1,69 +1,109 @@
-import Image from "next/image";
+import { AnnouncementBar } from "@/components/store/AnnouncementBar"
+import { StoreHeader } from "@/components/store/StoreHeader"
+import { HeroBanner } from "@/components/store/HeroBanner"
+import { SectionHeading } from "@/components/store/SectionHeading"
+import { CategoryCircle } from "@/features/categories/components/CategoryCircle"
+import { ProductCard } from "@/components/store/ProductCard"
+import { StoreButton } from "@/components/store/StoreButton"
+import { TrustStrip } from "@/components/store/TrustStrip"
+import { PromoBanner } from "@/components/store/PromoBanner"
+import { BlogCard } from "@/features/blog/components/BlogCard"
+import { StoreFooter } from "@/components/store/StoreFooter"
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <AnnouncementBar text="FREE SHIPPING ON ORDERS OVER 150 AED | EASY RETURNS WITHIN 14 DAYS" />
+      <StoreHeader />
+
+      <main className="flex-1">
+        <HeroBanner
+          imageSrc="/images/hero_banner.jpg"
+          eyebrow="NEW SEASON COLLECTION"
+          title={<>Elevated Style.<br />Everyday You.</>}
+          description={<>Timeless pieces. Modern silhouettes.<br/>Designed to elevate your everyday.</>}
+          buttonText="SHOP NEW ARRIVALS"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
+        <section className="py-16 md:py-24 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeading className="mb-12">SHOP BY CATEGORY</SectionHeading>
+          <div className="flex gap-8 md:gap-12 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar justify-start md:justify-center" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {[
+              { name: "Dresses", img: "/images/cat_dresses.jpg" },
+              { name: "Tops", img: "/images/cat_tops.jpg" },
+              { name: "Bottoms", img: "/images/cat_bottoms.jpg" },
+              { name: "Accessories", img: "/images/cat_accessories.jpg" },
+              { name: "Outerwear", img: "/images/cat_outerwear.jpg" },
+              { name: "Sale", img: "/images/cat_sale.jpg" },
+            ].map((cat, i) => (
+              <CategoryCircle 
+                key={i} 
+                name={cat.name} 
+                imageSrc={cat.img} 
+                href={`/shop/${cat.name.toLowerCase()}`} 
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="py-16 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeading className="mb-12">NEW ARRIVALS</SectionHeading>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-8 mb-12">
+            {[
+              { name: "Ribbed Knit Tank Top", price: "AED 250", img: "/images/product_photo.jpg", swatches: ["#FFFFFF", "#000000"] },
+              { name: "Satin Slip Dress", price: "AED 350", img: "/images/product_photo.jpg", swatches: ["#000000", "#F5F5DC", "#800000"] },
+              { name: "Relaxed Tailored Blazer", price: "AED 450", img: "/images/product_photo.jpg", swatches: ["#F5F5DC"] },
+              { name: "High Waist Wide Leg Pants", price: "AED 300", img: "/images/product_photo.jpg", swatches: ["#FFFFFF", "#000000"] },
+            ].map((prod, i) => (
+              <ProductCard
+                key={i}
+                name={prod.name}
+                price={prod.price}
+                imageSrc={prod.img}
+                href="/products/product-slug"
+                swatches={prod.swatches}
+              />
+            ))}
+          </div>
+          <div className="flex justify-center">
+            <StoreButton variant="outline" className="px-8 border-input text-foreground hover:bg-accent hover:text-accent-foreground">
+              VIEW ALL NEW ARRIVALS
+            </StoreButton>
+          </div>
+        </section>
+
+        <TrustStrip />
+
+        <PromoBanner
+          imageSrc="/images/promo_banner.jpg"
+          eyebrow="LIMITED TIME ONLY"
+          title="Summer Refresh"
+          description="Enjoy up to 30% off selected styles."
+          buttonText="SHOP THE SALE"
+        />
+
+        <section className="py-16 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+          <SectionHeading className="mb-2">FROM THE JOURNAL</SectionHeading>
+          <p className="text-[13px] text-muted-foreground mb-12">Discover the latest trends, styling tips, and brand news.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+             {[
+               { title: "How to transition your wardrobe for the new season", category: "Style Guide" },
+               { title: "Behind the scenes: The making of our latest collection", category: "Brand News" },
+               { title: "5 effortless looks for your next summer getaway", category: "Inspiration" }
+             ].map((post, i) => (
+                <BlogCard
+                  key={i}
+                  title={post.title}
+                  category={post.category}
+                  imageSrc="/images/promo_banner.jpg"
+                  href="/journal/post-slug"
+                />
+             ))}
+          </div>
+        </section>
       </main>
+
+      <StoreFooter />
     </div>
   );
 }
