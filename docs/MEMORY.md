@@ -3,16 +3,20 @@
 > The project's current state. Update it after every task. Permanent decisions go in `DECISIONS.md`.
 
 ## Current Status
-Planning complete. No code yet. Design system ready from the client's reference; the AR logo is still missing.
+Phase 1 Setup is underway. Next.js scaffolded, folder structure created, and shadcn/ui installed with the Lyra style (preset buFywKm). Design tokens, icons (Lucide), and fonts configured as per DESIGN.md.
 
 ## Completed
 - Research: stack, payments, auth, media, UAE compliance
 - Requirements interview with the tech lead
 - Project docs: PRD, ARCHITECTURE, DESIGN, RULES, TASKS, DECISIONS, TEST_PLAN, SECURITY, README, `.env.example`, Cursor rules
 - Docs update: colours → sizes → SKU model, photos per colour, private stock counts, Sentry instead of Better Stack, design tokens and fonts from the client's reference (ADR-023 to ADR-028)
+- Scaffold Next.js project (TASK-001)
+- Strict TypeScript, Prettier, path alias (TASK-002)
+- Folder structure setup (TASK-003)
+- shadcn/ui init with Lyra style and design tokens (TASK-004)
 
 ## Current Task
-TASK-001 Scaffold the Next.js project
+TASK-005 src/lib/env.ts: validate every environment variable with Zod
 
 ## Waiting On
 - Client answers to Q1 to Q25 in `PRD.md`. Most urgent: Q1 guest checkout, Q2 return window, Q6 delivery fee, Q11 categories, Q15 VAT, Q23 existing SKUs, Q24 sizes and colours
@@ -27,8 +31,9 @@ TASK-001 Scaffold the Next.js project
 - Sentry free plan: one user, email alerts only, one cron monitor and one uptime monitor, 5,000 errors a month. Upgrade to Team when a second person needs access or a limit is hit.
 
 ## Next Step
-Send the open questions to the client and start TASK-001.
+Implement Zod environment variable validation (TASK-005).
 
 ## Log
 - 5 Oct 2026: project docs created
 - 6 Oct 2026: colour and size variants with unique SKUs, photos per colour, Sentry monitoring, design system from the client's reference; tasks renumbered (112)
+- 6 Oct 2026: project scaffolded (Next.js, TS, Tailwind v4, shadcn/ui Lyra preset) and design tokens applied

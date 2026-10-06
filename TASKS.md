@@ -19,10 +19,10 @@ Status: `[ ]` to do · `[~]` in progress · `[x]` done
 
 ## Phase 1: Setup
 Done when: an empty app builds, CI is green, a Vercel preview deploys and a test error reaches Sentry.
-- [ ] TASK-001 Scaffold Next.js 16 (≥ 16.3.8) with TypeScript, Tailwind, ESLint, App Router and `src/`. Do this before copying in these docs: `create-next-app` refuses a folder that already has a `README.md`
-- [ ] TASK-002 Strict TypeScript, Prettier, `@/` path alias and the npm scripts listed in `README.md`
-- [ ] TASK-003 Create the folder structure from `docs/ARCHITECTURE.md`
-- [ ] TASK-004 shadcn/ui: `npx shadcn@latest init` with a preset close to `docs/DESIGN.md` (square corners), then set the exact tokens, radius and fonts from `docs/DESIGN.md`; fonts in `src/lib/fonts.ts`; `success` and `warning` in `src/styles/brand.css`; record the preset code in `docs/DESIGN.md`; try one `apply --only theme,font` to prove a re-theme needs no code changes
+- [x] TASK-001 Scaffold Next.js 16 (≥ 16.3.8) with TypeScript, Tailwind, ESLint, App Router and `src/`. Do this before copying in these docs: `create-next-app` refuses a folder that already has a `README.md`
+- [x] TASK-002 Strict TypeScript, Prettier, `@/` path alias and the npm scripts listed in `README.md`
+- [x] TASK-003 Create the folder structure from `docs/ARCHITECTURE.md`
+- [x] TASK-004 shadcn/ui: `npx shadcn@latest init` with a preset close to `docs/DESIGN.md` (square corners), then set the exact tokens, radius and fonts from `docs/DESIGN.md`; fonts in `src/lib/fonts.ts`; `success` and `warning` in `src/styles/brand.css`; record the preset code in `docs/DESIGN.md`; try one `apply --only theme,font` to prove a re-theme needs no code changes
 - [ ] TASK-005 `src/lib/env.ts`: validate every environment variable with Zod; keep `.env.example` in sync
 - [ ] TASK-006 Supabase CLI: local project, first migration, generated types (`npm run db:types`)
 - [ ] TASK-007 Vitest and Playwright set up with one passing test each

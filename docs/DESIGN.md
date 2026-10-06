@@ -8,8 +8,8 @@
 | Layer | Lives in | Changed by |
 |---|---|---|
 | Theme tokens (colours, radius) | `src/app/globals.css` (`:root`) | A shadcn preset, or a hand edit |
-| Fonts | `src/lib/fonts.ts` (`next/font`) → `--font-sans`, `--font-heading` | A shadcn preset, or one import |
-| Our extra tokens (`success`, `warning`) | `src/styles/brand.css` | Hand edit; presets never touch it |
+| Fonts | `src/lib/fonts.ts` (`next/font`) â†’ `--font-sans`, `--font-heading` | A shadcn preset, or one import |
+| Our extra tokens (`success`, `warning`) and the admin heading font | `src/styles/brand.css`, imported at the top of `globals.css` | Hand edit; presets never touch it |
 | Primitives (Button, Input, Sheet and so on) | `src/components/ui/` | `shadcn add` or `shadcn apply` only. Never hand-edit |
 | Layouts (hero, category circles, product card, pickers) | `src/components/store/`, `src/features/*/components/` | Code. A preset never changes layout |
 
@@ -19,11 +19,14 @@
 3. A full `npx shadcn@latest apply --preset <code>` also reinstalls everything in `src/components/ui/`. That's why those files are never hand-edited.
 4. Re-check contrast (WCAG AA), update the tables below and record the new preset code.
 
-**Preset code:** recorded in TASK-004.
+**Current preset:** `buFywKm`, applied 6 Oct 2026. It sets the **Lyra** style (boxy, square corners), Lucide icons, Inter and neutral colours. We then replaced the `:root` colours with the palette below and Inter with the fonts in Typography.
+- The style (Lyra) lives in the component code in `src/components/ui/`, so it only changes with a full `apply`.
+- A full `apply`, even of `buFywKm` again, resets the colours to neutral and the font to Inter. Put the colours and fonts from this file back afterwards, and check that `globals.css` still imports `brand.css`.
 
 ## Style
-- **Storefront:** warm, minimal, editorial. Off-white page, sand-toned panels, black buttons, square corners, serif headings, small uppercase sans labels with wide letter spacing. Photography does the talking.
-- **Admin:** the same tokens with the sans font only. shadcn/ui components, dense and practical.
+- **Storefront:** warm, minimal, editorial. Off-white page, sand-toned panels, black buttons, square corners (Lyra), serif headings, small uppercase sans labels with wide letter spacing. Photography does the talking.
+- **Admin:** the same tokens with the sans font only, titles included (see Typography). shadcn/ui components, dense and practical.
+- **Icons:** Lucide (`lucide-react`), from the preset. Use `strokeWidth={1.5}` on the storefront to match the reference's thin line icons.
 
 ## Typography
 | Role | Font | Token | Weights |
@@ -31,7 +34,11 @@
 | Headings, section titles | Cormorant Garamond | `--font-heading` (`font-heading`) | 500, 600 |
 | Body, UI, navigation, buttons, prices | Montserrat | `--font-sans` (`font-sans`) | 400, 500, 600 |
 
-These are the closest free Google Fonts to the reference (a classic Garamond-style serif and a wide geometric sans). Both load through `next/font` in `src/lib/fonts.ts`, so swapping one is a one-line change (or `--only font` with a preset).
+These are the closest free Google Fonts to the reference (a classic Garamond-style serif and a wide geometric sans). Both load through `next/font` in `src/lib/fonts.ts`, so swapping one is a one-line change (or `--only font` with a preset). The preset ships Inter: `src/lib/fonts.ts` replaces it with these two, and `globals.css` maps `--font-heading` to `var(--font-heading)` (the preset maps it to the body font).
+
+Lyra puts `font-heading` on component titles (Card, Dialog, Sheet and similar), so they follow `--font-heading`:
+- **Storefront:** those titles use Cormorant at Lyra's 14px. Size them up with `className` where they show (for example `text-xl` on the cart drawer title).
+- **Admin:** stays sans. The outermost element in `src/app/admin/layout.tsx` carries `data-surface="admin"`, and `brand.css` then points `--font-heading` at the sans for the whole page (`html:has([data-surface="admin"])`). Doing it on `<html>` also covers dialogs and sheets, which render outside the admin layout. This needs the `next/font` variables on `<html>` in the root layout.
 
 | Style | Desktop | Mobile | Font | Details |
 |---|---|---|---|---|
@@ -66,9 +73,9 @@ Sampled from the reference, then adjusted where needed to pass WCAG AA. Paired t
 | `success` (brand.css) | #1F7A4D | oklch(0.515 0.110 156.8) | Paid, delivered, refunded |
 | `warning` (brand.css) | #8F5B0A | oklch(0.517 0.108 69.9) | Pending, needs attention |
 
-- **Radius:** `--radius: 0`. Square corners everywhere, like the reference.
+- **Corners:** square everywhere, like the reference. They come from the Lyra style: its components use `rounded-none`, so `--radius` (left at the preset default, `0.625rem`) doesn't affect them. Our own components never add rounding either: no `rounded-sm` to `rounded-4xl`. Only colour swatches, category photos and avatars use `rounded-full`.
 - Status colours sit on `background` or `card` only (they drop below 4.5:1 on sand).
-- No dark mode in v1.
+- No dark mode in v1. The `.dark` block the preset left in `globals.css` is unused; never add the `dark` class.
 
 ## Layout
 - Mobile first. Tailwind breakpoints: `sm` 640, `md` 768, `lg` 1024, `xl` 1280. Test at 375px, 768px and 1440px.
@@ -79,7 +86,7 @@ Sampled from the reference, then adjusted where needed to pass WCAG AA. Paired t
 ## Home Page (from the reference)
 | # | Block | What we build |
 |---|---|---|
-| 1 | Announcement bar | `primary` strip, white uppercase 12px text, centred. Text comes from settings and must match the real policy (e.g. "FREE DELIVERY OVER AED 300 · EASY RETURNS WITHIN 14 DAYS"; Q2, Q6) |
+| 1 | Announcement bar | `primary` strip, white uppercase 12px text, centred. Text comes from settings and must match the real policy (e.g. "FREE DELIVERY OVER AED 300 Â· EASY RETURNS WITHIN 14 DAYS"; Q2, Q6) |
 | 2 | Header | Logo left; menu in the centre (New in, the categories, Sale); account and cart with a count on the right. Mobile: menu button, centred logo, cart. No search or wishlist icons in v1 (Q22, Q25) |
 | 3 | Hero banner | Full-width photo with the text on its plain side: eyebrow, two-line title, one line of text, primary button. Mobile: photo first, text below. From `banners` (placement hero) |
 | 4 | Shop by category | Section title, round category photos (160px on desktop, 96px on mobile) with uppercase labels; up to 6 in a row, swipe on mobile. A Sale circle can link to `/shop?sale=1` (Q25) |
@@ -92,25 +99,26 @@ Sampled from the reference, then adjusted where needed to pass WCAG AA. Paired t
 Left out from the reference: wishlist hearts, the search icon, the newsletter box and the Instagram gallery (out of scope, Q25). Prices are always AED.
 
 ## Components
+Lyra components are compact: a default Button is 32px tall and `lg` is 36px. The storefront gets its larger sizes through `className` or small wrappers in `src/components/store/` (for example `StoreButton`), never by editing `src/components/ui/`. The admin uses the shadcn sizes as they are.
 
 ### Buttons
 | Variant | Look | Use |
 |---|---|---|
 | Primary | Solid `primary`, white uppercase 12px label, letter spacing 0.12em | Add to cart, Checkout, Shop now |
-| Outline | 1px `input` border, `foreground` label | View all, secondary actions |
+| Outline | Lyra outline variant; the storefront adds a `border-input` edge so it stays visible | View all, secondary actions |
 | Ghost / Link | Text only, underline on hover | Tertiary actions |
-| Destructive | Solid `destructive` (admin only) | Reject, archive, confirm refund |
+| Destructive | shadcn destructive variant: red text on a light red fill in Lyra (admin only) | Reject, archive, confirm refund |
 
-Storefront buttons are 48px tall (touch targets never below 44px). While submitting, show a spinner and disable the button.
+Storefront buttons are 48px tall through `StoreButton` (touch targets never below 44px). While submitting, show a spinner and disable the button.
 
 ### Product card
-Photo (4:5, `muted` placeholder while it loads) → name → price (compare-at price struck through in `muted-foreground`) → colour swatches → badges. The photo is the default colour's main photo; on desktop, hovering shows that colour's second photo. Swatches show which colours exist (up to 4, then "+2"); they aren't separate links, so the whole card stays one link. No wishlist heart in v1.
+Photo (4:5, `muted` placeholder while it loads) â†’ name â†’ price (compare-at price struck through in `muted-foreground`) â†’ colour swatches â†’ badges. The photo is the default colour's main photo; on desktop, hovering shows that colour's second photo. Swatches show which colours exist (up to 4, then "+2"); they aren't separate links, so the whole card stays one link. No wishlist heart in v1.
 
 ### Colour picker
 Round swatches filled with the colour's `swatch_hex`: 14px on cards, 32px on the product page, with a 1px `border` ring so white and ivory stay visible. Selected: a 2px `foreground` ring with a 2px gap. The colour name always shows next to the picker ("Colour: Black"). A colour with every size sold out stays visible with a diagonal line through it.
 
 ### Size picker
-Square chips, at least 48 × 48, with a 1px `input` border; selected is solid `primary`. Only the sizes the selected colour comes in, in size order. Sold-out sizes stay visible, greyed and struck through, and can't be selected. "Only N left" shows under the picker when the selected SKU has 3 or fewer. The selected state never relies on colour alone.
+Square chips, at least 48 Ã— 48, with a 1px `input` border; selected is solid `primary`. Only the sizes the selected colour comes in, in size order. Sold-out sizes stay visible, greyed and struck through, and can't be selected. "Only N left" shows under the picker when the selected SKU has 3 or fewer. The selected state never relies on colour alone.
 
 ### Product page
 Not in the reference; it follows the same style.
@@ -122,7 +130,7 @@ Not in the reference; it follows the same style.
 New, Sale, Sold out, Final sale: uppercase 11px on `background` with a 1px `border`, top left of the photo. Order and return statuses use `success`, `warning`, `destructive` and `muted`.
 
 ### Forms
-Inputs are 48px tall on the storefront and 40px in the admin, with a white `card` background, a 1px `input` border and square corners. Label above the field, helper text below, error text in `destructive` under the field. Mark optional fields, not required ones. Validate on blur and on submit.
+Inputs are 48px tall on the storefront and 40px in the admin (set with `className`; Lyra's default is smaller), with a white `card` background, a 1px `input` border and square corners. Label above the field, helper text below, error text in `destructive` under the field. Mark optional fields, not required ones. Validate on blur and on submit.
 
 ### Feedback
 - Toasts for admin saves.
@@ -136,10 +144,10 @@ shadcn data table: sticky header, search, filters, pagination (25 rows), status 
 Colours down, sizes across. Each cell shows the SKU, on hand, held and available; low stock in `warning`, zero in `destructive`. Editing a number asks for a reason. On mobile it becomes a list grouped by colour.
 
 ## Imagery
-- **Product photos:** portrait 4:5, at least 1600 × 2000, plain light backdrop, the same framing for every colour. At least 1 photo per colour, ideally 4 to 6 (front, back, side, detail). Uploaded once per colour; every size of that colour uses them.
-- **Category photos:** square 1:1, at least 600 × 600, subject centred (shown as circles).
-- **Hero banner:** desktop 8:3 (at least 2400 × 900) with a plain side for the text; mobile 4:5 (at least 1080 × 1350).
-- **Promo banner:** desktop 4:1 (at least 2400 × 600) with a plain side for the text; mobile 4:5.
+- **Product photos:** portrait 4:5, at least 1600 Ã— 2000, plain light backdrop, the same framing for every colour. At least 1 photo per colour, ideally 4 to 6 (front, back, side, detail). Uploaded once per colour; every size of that colour uses them.
+- **Category photos:** square 1:1, at least 600 Ã— 600, subject centred (shown as circles).
+- **Hero banner:** desktop 8:3 (at least 2400 Ã— 900) with a plain side for the text; mobile 4:5 (at least 1080 Ã— 1350).
+- **Promo banner:** desktop 4:1 (at least 2400 Ã— 600) with a plain side for the text; mobile 4:5.
 - Always served through the Cloudinary loader with automatic format and quality. The hero image loads with priority; everything else lazy-loads.
 - Alt text is required for every image (e.g. "Satin slip dress in black, front").
 - Never reuse the reference's photos; they aren't ours.
