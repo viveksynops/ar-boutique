@@ -8,8 +8,8 @@
 | Layer | Lives in | Changed by |
 |---|---|---|
 | Theme tokens (colours, radius) | `src/app/globals.css` (`:root`) | A shadcn preset, or a hand edit |
-| Fonts | `src/lib/fonts.ts` (`next/font`) â†’ `--font-sans`, `--font-heading` | A shadcn preset, or one import |
-| Our extra tokens (`success`, `warning`) and the admin heading font | `src/styles/brand.css`, imported at the top of `globals.css` | Hand edit; presets never touch it |
+| Fonts | `src/lib/fonts.ts` (`next/font`), setting `--font-sans` and `--font-heading` | A shadcn preset, or one import |
+| Our extra tokens (`success`, `warning`, `gold`) and the admin heading font | `src/styles/brand.css`, imported at the top of `globals.css` | Hand edit; presets never touch it |
 | Primitives (Button, Input, Sheet and so on) | `src/components/ui/` | `shadcn add` or `shadcn apply` only. Never hand-edit |
 | Layouts (hero, category circles, product card, pickers) | `src/components/store/`, `src/features/*/components/` | Code. A preset never changes layout |
 
@@ -24,7 +24,7 @@
 - A full `apply`, even of `buFywKm` again, resets the colours to neutral and the font to Inter. Put the colours and fonts from this file back afterwards, and check that `globals.css` still imports `brand.css`.
 
 ## Style
-- **Storefront:** warm, minimal, editorial. Off-white page, sand-toned panels, black buttons, square corners (Lyra), serif headings in Title Case at regular weight, a clean neutral sans for everything else. Only small eyebrows and the announcement bar are uppercase. Photography does the talking.
+- **Storefront:** warm, minimal, editorial. Cream page, sand-toned panels, plum buttons (from the logo), square corners (Lyra), serif headings in Title Case at regular weight, a clean neutral sans for everything else. Only small eyebrows and the announcement bar are uppercase. Photography does the talking.
 - **Admin:** the same tokens with the sans font only, titles included (see Typography). shadcn/ui components, dense and practical.
 - **Icons:** Lucide (`lucide-react`), from the preset. Use `strokeWidth={1.5}` on the storefront to match the reference's thin line icons.
 
@@ -57,24 +57,28 @@ Lyra puts `font-heading` on component titles (Card, Dialog, Sheet and similar), 
 Sizes were measured on the reference and scaled to a 1440px-wide layout. Adjust during the build if something looks off.
 
 ## Colours
-Sampled from the reference, then adjusted where needed to pass WCAG AA. Paired tokens (`card-foreground`, `secondary-foreground`, `accent-foreground` and so on) use `foreground`.
+Built from the logo (plum #5D173A and gold #B49665, received 6 Oct 2026) with warm cream neutrals, then checked against WCAG AA. Paired tokens (`card-foreground`, `secondary-foreground`, `accent-foreground` and so on) use `foreground`.
 
 | Token | Hex | OKLCH | Use |
 |---|---|---|---|
-| `background` | #FCFBF9 | oklch(0.988 0.003 84.6) | Page |
-| `foreground` | #1A1918 | oklch(0.214 0.002 67.7) | Text |
+| `background` | #FBF8F3 | oklch(0.980 0.007 80.7) | Page |
+| `foreground` | #231A1F | oklch(0.231 0.017 344.0) | Text (near-black with a hint of plum; 16:1 on the page) |
 | `card`, `popover` | #FFFFFF | oklch(1 0 0) | Cards, inputs, drawers, menus |
-| `primary` | #1A1918 | oklch(0.214 0.002 67.7) | Solid buttons, announcement bar, cart count |
-| `primary-foreground` | #FFFFFF | oklch(1 0 0) | Text on `primary` (17.6:1) |
-| `secondary`, `muted` | #F5F1ED | oklch(0.960 0.007 67.7) | Trust strip, footer, soft panels, image placeholders, skeletons |
-| `muted-foreground` | #6B645E | oklch(0.508 0.013 63.2) | Secondary text: 5.6:1 on the page, 4.6:1 on sand |
-| `accent` | #EBE2DB | oklch(0.918 0.014 60.6) | Sand: hero and promo text panels, hover fills |
-| `border` | #E3DCD5 | oklch(0.898 0.012 67.7) | Decorative dividers |
-| `input` | #8C847D | oklch(0.618 0.014 63.8) | Input, size chip and outline button borders (3.7:1 on white) |
-| `ring` | #1A1918 | oklch(0.214 0.002 67.7) | Focus ring |
+| `primary` | #5D173A | oklch(0.333 0.107 353.9) | Logo plum: solid buttons, announcement bar, cart count, links, active navigation underline |
+| `primary-foreground` | #FFFFFF | oklch(1 0 0) | Text on `primary` (12.7:1) |
+| `secondary`, `muted` | #F5EFE6 | oklch(0.954 0.014 78.3) | Trust strip, footer, soft panels, image placeholders, skeletons |
+| `muted-foreground` | #6E6259 | oklch(0.505 0.021 59.2) | Secondary text: 5.6:1 on the page, 4.7:1 on sand |
+| `accent` | #EEE4D4 | oklch(0.922 0.024 79.7) | Sand with a touch of gold: hero and promo text panels, hover fills |
+| `border` | #E6DCCD | oklch(0.898 0.023 78.2) | Decorative dividers |
+| `input` | #8E8174 | oklch(0.611 0.025 67.3) | Input, size chip and outline button borders (3.8:1 on white) |
+| `ring` | #5D173A | oklch(0.333 0.107 353.9) | Focus ring |
 | `destructive` | #B42318 | oklch(0.500 0.182 29.5) | Errors, reject |
 | `success` (brand.css) | #1F7A4D | oklch(0.515 0.110 156.8) | Paid, delivered, refunded |
 | `warning` (brand.css) | #8F5B0A | oklch(0.517 0.108 69.9) | Pending, needs attention |
+| `gold` (brand.css) | #B49665 | oklch(0.689 0.075 79.3) | Logo gold, decoration only: thin dividers, small ornaments, icon accents |
+| Charts | #5D173A, #B49665, #9A5577, #D8C4A0, #3B0E25 | `chart-1` to `chart-5` | Admin charts: plum and gold steps |
+
+- **Gold is never text and never the only sign of a state:** it's 2.7:1 on the page, below AA. Use `primary` for anything that carries meaning (links, the current page, selected chips).
 
 - **Corners:** square everywhere, like the reference. They come from the Lyra style: its components use `rounded-none`, so `--radius` (left at the preset default, `0.625rem`) doesn't affect them. Our own components never add rounding either: no `rounded-sm` to `rounded-4xl`. Only colour swatches, category photos and avatars use `rounded-full`.
 - Status colours sit on `background` or `card` only (they drop below 4.5:1 on sand).
@@ -89,7 +93,7 @@ Sampled from the reference, then adjusted where needed to pass WCAG AA. Paired t
 ## Home Page (from the reference)
 | # | Block | What we build |
 |---|---|---|
-| 1 | Announcement bar | `primary` strip, white uppercase 12px text, centred. Text comes from settings and must match the real policy (e.g. "FREE DELIVERY OVER AED 300 Â· EASY RETURNS WITHIN 14 DAYS"; Q2, Q6) |
+| 1 | Announcement bar | `primary` strip, white uppercase 12px text, centred. Text comes from settings and must match the real policy (e.g. "FREE DELIVERY OVER AED 300 / EASY RETURNS WITHIN 14 DAYS"; Q2, Q6) |
 | 2 | Header | Logo left; menu in the centre (New in, the categories, Sale); account and cart with a count on the right. Mobile: menu button, centred logo, cart. No search or wishlist icons in v1 (Q22, Q25) |
 | 3 | Hero banner | Full-width photo with the text on its plain side: eyebrow, two-line title, one line of text, primary button. Mobile: photo first, text below. From `banners` (placement hero) |
 | 4 | Shop by category | Section title, round category photos (160px on desktop, 96px on mobile) with the category names as labels (Sans 500, never uppercase); up to 6 in a row, swipe on mobile. A Sale circle can link to `/shop?sale=1` (Q25) |
@@ -115,13 +119,13 @@ Lyra components are compact: a default Button is 32px tall and `lg` is 36px. The
 Storefront buttons are 48px tall through `StoreButton` (touch targets never below 44px). While submitting, show a spinner and disable the button.
 
 ### Product card
-Photo (4:5, `muted` placeholder while it loads) â†’ name â†’ price (compare-at price struck through in `muted-foreground`) â†’ colour swatches â†’ badges. The photo is the default colour's main photo; on desktop, hovering shows that colour's second photo. Swatches show which colours exist (up to 4, then "+2"); they aren't separate links, so the whole card stays one link. No wishlist heart in v1.
+Photo (4:5, `muted` placeholder while it loads), then name, then price (compare-at price struck through in `muted-foreground`), then colour swatches and badges. The photo is the default colour's main photo; on desktop, hovering shows that colour's second photo. Swatches show which colours exist (up to 4, then "+2"); they aren't separate links, so the whole card stays one link. No wishlist heart in v1.
 
 ### Colour picker
 Round swatches filled with the colour's `swatch_hex`: 14px on cards, 32px on the product page, with a 1px `border` ring so white and ivory stay visible. Selected: a 2px `foreground` ring with a 2px gap. The colour name always shows next to the picker ("Colour: Black"). A colour with every size sold out stays visible with a diagonal line through it.
 
 ### Size picker
-Square chips, at least 48 Ã— 48, with a 1px `input` border; selected is solid `primary`. Only the sizes the selected colour comes in, in size order. Sold-out sizes stay visible, greyed and struck through, and can't be selected. "Only N left" shows under the picker when the selected SKU has 3 or fewer. The selected state never relies on colour alone.
+Square chips, at least 48 x 48, with a 1px `input` border; selected is solid `primary`. Only the sizes the selected colour comes in, in size order. Sold-out sizes stay visible, greyed and struck through, and can't be selected. "Only N left" shows under the picker when the selected SKU has 3 or fewer. The selected state never relies on colour alone.
 
 ### Product page
 Not in the reference; it follows the same style.
@@ -147,13 +151,14 @@ shadcn data table: sticky header, search, filters, pagination (25 rows), status 
 Colours down, sizes across. Each cell shows the SKU, on hand, held and available; low stock in `warning`, zero in `destructive`. Editing a number asks for a reason. On mobile it becomes a list grouped by colour.
 
 ## Imagery
-- **Product photos:** portrait 4:5, at least 1600 Ã— 2000, plain light backdrop, the same framing for every colour. At least 1 photo per colour, ideally 4 to 6 (front, back, side, detail). Uploaded once per colour; every size of that colour uses them.
-- **Category photos:** square 1:1, at least 600 Ã— 600, subject centred (shown as circles).
-- **Hero banner:** desktop 8:3 (at least 2400 Ã— 900) with a plain side for the text; mobile 4:5 (at least 1080 Ã— 1350).
-- **Promo banner:** desktop 4:1 (at least 2400 Ã— 600) with a plain side for the text; mobile 4:5.
+- **Product photos:** portrait 4:5, at least 1600 x 2000, plain light backdrop, the same framing for every colour. At least 1 photo per colour, ideally 4 to 6 (front, back, side, detail). Uploaded once per colour; every size of that colour uses them.
+- **Category photos:** square 1:1, at least 600 x 600, subject centred (shown as circles).
+- **Hero banner:** desktop 8:3 (at least 2400 x 900) with a plain side for the text; mobile 4:5 (at least 1080 x 1350).
+- **Promo banner:** desktop 4:1 (at least 2400 x 600) with a plain side for the text; mobile 4:5.
 - Always served through the Cloudinary loader with automatic format and quality. The hero image loads with priority; everything else lazy-loads.
 - Alt text is required for every image (e.g. "Satin slip dress in black, front").
 - Never reuse the reference's photos; they aren't ours.
+- **Logo:** a stacked lockup (the AR figure above THE AR BOUTIQUE), as a vector in `public/the-ar-boutique-logo.svg` with a PNG beside it. Full size in the footer and emails. It's nearly square, so in the header the words get too small to read: use the horizontal version there once it exists (Q17), and until then the stacked logo at its largest size that fits. Never recolour, stretch or crop it, and never put it on `primary` or a photo.
 
 ## UX Requirements
 - Mobile responsive everywhere, storefront and admin.
@@ -176,10 +181,10 @@ Colours down, sizes across. Each cell shows the SKU, on hand, held and available
 - Tone: warm, short and confident. No jargon.
 
 ## Emails
-Simple branded layout: logo, `background` colour, black text, one primary button, an order summary table where each line shows the colour's photo, the colour, the size and the SKU, and a footer with contact and policy links. Mobile friendly, 600px max width. Email clients can't read CSS variables or load our fonts reliably, so use the hex values above, Georgia for headings and Arial for body text.
+Simple branded layout: logo, `background` colour, `foreground` text, one plum `primary` button, an order summary table where each line shows the colour's photo, the colour, the size and the SKU, and a footer with contact and policy links. Mobile friendly, 600px max width. Email clients can't read CSS variables or load our fonts reliably, so use the hex values above, Georgia for headings and Arial for body text.
 
 ## Still Needed From the Client (Q17)
-- AR Boutique logo (SVG, dark and light versions) and a favicon
-- The client's OK on this look, and any brand colour they'd like instead of black
+- Logo: received 6 Oct 2026 (plum and gold on cream), traced to a clean vector. Still needed: a horizontal version for the header, a light version for dark backgrounds, and a favicon
+- The client's OK on this look, including plum as the main colour
 - Product, category and banner photos in the sizes above
 - Designs for other pages are optional; until they arrive, those pages follow this file
