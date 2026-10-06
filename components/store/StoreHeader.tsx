@@ -12,17 +12,17 @@ export function StoreHeader() {
         </div>
         
         <div className="flex-1 lg:flex-none">
-          <Link href="/" className="text-2xl font-heading tracking-wide">
-            AR BOUTIQUE
+          <Link href="/" className="inline-block">
+            <img src="/images/logo.svg" alt="AR Boutique" className="h-10 sm:h-14 w-auto" />
           </Link>
         </div>
 
-        <nav className="hidden lg:flex flex-1 justify-center gap-8 text-[12px] font-semibold uppercase tracking-[0.14em]">
-          <Link href="/shop/new-in" className="hover:text-muted-foreground transition-colors">New In</Link>
-          <Link href="/shop" className="hover:text-muted-foreground transition-colors">Shop All</Link>
-          <Link href="/shop/dresses" className="hover:text-muted-foreground transition-colors">Dresses</Link>
-          <Link href="/shop/tops" className="hover:text-muted-foreground transition-colors">Tops</Link>
-          <Link href="/shop/sale" className="hover:text-muted-foreground transition-colors">Sale</Link>
+        <nav className="hidden lg:flex flex-1 justify-center gap-8 text-[15px] font-normal">
+          <Link href="/" className="hover:text-muted-foreground transition-colors">Home</Link>
+          <Link href="/shop" className="hover:text-muted-foreground transition-colors">Collections</Link>
+          <Link href="/journal" className="hover:text-muted-foreground transition-colors">Journal</Link>
+          <Link href="/about" className="hover:text-muted-foreground transition-colors">About</Link>
+          <Link href="/contact" className="hover:text-muted-foreground transition-colors">Contact Us</Link>
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-4">

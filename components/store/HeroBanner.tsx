@@ -26,7 +26,7 @@ export function HeroBanner({ imageSrc, eyebrow, title, description, buttonText }
               <p className="text-[12px] font-semibold uppercase tracking-[0.14em] mb-4 text-primary/80">
                 {eyebrow}
               </p>
-              <h1 className="font-heading text-4xl sm:text-5xl lg:text-[64px] leading-[1.05] mb-6 text-primary">
+              <h1 className="font-heading text-[40px] md:text-[60px] leading-[1.1] md:leading-[1.05] tracking-[-0.01em] font-normal mb-6 text-primary">
                 {title}
               </h1>
               <p className="text-base text-primary/80 mb-8 max-w-sm">
