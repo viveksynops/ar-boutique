@@ -1,4 +1,3 @@
-
 Rules for AI coding agents working on AR Boutique. The full rulebook is `docs/RULES.md`. When a rule changes, update both.
 
 ## Project docs
@@ -53,7 +52,7 @@ Applies to `src/services/**`, `src/lib/**`, `src/app/api/**`, `src/features/**/a
 
 ### Structure
 - Database and third-party calls live in `src/services/*` with `import 'server-only'`.
-- Every Server Action and Route Handler: check auth → validate with Zod → call a service → return a typed result.
+- Every Server Action and Route Handler: check auth â†’ validate with Zod â†’ call a service â†’ return a typed result.
 - Orders, stock, returns and refunds change only through Postgres functions that check the current state in one transaction.
 
 ### Auth
@@ -106,14 +105,27 @@ Applies to `tests/**`, `supabase/tests/**`, `**/*.test.ts`, `**/*.test.tsx` and 
 - Fix failing tests before continuing. Every bug fix adds a test that would have caught it.
 
 ## Git
+- Never run `git add`, `git commit`, `git push`, `git reset`, `git rebase` or `git stash` unless I ask for it in that message. When I ask for a commit message, only write it.
 - One branch per task: `feature/TASK-0xx-short-name` or `fix/short-name`.
-- Small commits with descriptive messages: `feat:`, `fix:`, `test:`, `docs:`, `chore:`.
 - Never commit `.env*` files except `.env.example`.
+- To write a commit message, read `git diff --staged`. If nothing is staged, use the unstaged changes and say so. If the changes mix unrelated work, suggest splitting them into small commits.
+
+### Commit messages
+Format: `<type>(<scope>): <subject>`, a blank line, the body, a blank line, the footer.
+- Header required, scope optional. No line over 100 characters.
+- Types: `feat`, `fix`, `docs`, `style` (formatting only), `refactor`, `perf`, `test`, `chore` (build, tooling, dependencies).
+- Scope: the area changed, e.g. `store`, `home`, `product`, `cart`, `checkout`, `admin`, `stock`, `returns`, `auth`, `db`, `ui`, `theme`, `env`, `docs`.
+- Subject: imperative present tense ("add", not "added" or "adds"), lowercase first letter, no full stop at the end.
+- Body: imperative too; say why the change was made and how it differs from before.
+- Footer: `BREAKING CHANGE: <what breaks and how to migrate>`, `Closes #<issue>`, and the TASK-0xx it finishes.
+- Revert: `revert: <header of the reverted commit>`, with the body `This reverts commit <hash>.`
+- Example header: `feat(home): add hero banner and shop by category`
 
 ## After each task, report
 1. Files changed
 2. What was implemented
 3. Tests executed
 4. Remaining issues
+5. A suggested commit message (don't commit)
 
 Then mark the task done in `TASKS.md` and update `docs/MEMORY.md`.
