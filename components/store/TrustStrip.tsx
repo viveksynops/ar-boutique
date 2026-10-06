@@ -15,8 +15,8 @@ const trustItems: TrustItem[] = [
 
 export function TrustStrip() {
   return (
-    <div className="bg-secondary py-6 px-6 md:px-12 w-full">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-4">
+    <div className="bg-secondary py-8 px-6 md:px-12 w-full">
+      <div className="grid grid-cols-2 md:flex md:flex-row justify-between items-start md:items-center gap-y-8 gap-x-4 md:gap-4">
         {trustItems.map((item, i) => (
           <div key={i} className="flex items-center gap-4 text-left">
             <item.icon className="h-6 w-6 text-foreground" strokeWidth={1.5} />
