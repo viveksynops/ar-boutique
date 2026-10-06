@@ -11,8 +11,8 @@ interface PromoBannerProps {
 
 export function PromoBanner({ imageSrc, eyebrow, title, description, buttonText }: PromoBannerProps) {
   return (
-    <div className="flex flex-col md:flex-row w-full h-[320px] md:h-[380px] bg-accent">
-      <div className="relative w-full md:w-[60%] h-full">
+    <div className="flex flex-col md:flex-row w-full h-auto md:h-[380px] bg-accent">
+      <div className="relative w-full md:w-[60%] h-[300px] md:h-full">
         <Image
           src={imageSrc}
           alt={title}
@@ -20,7 +20,7 @@ export function PromoBanner({ imageSrc, eyebrow, title, description, buttonText 
           className="object-cover object-center"
         />
       </div>
-      <div className="w-full md:w-[40%] h-full p-8 md:p-12 flex flex-col items-center justify-center text-center">
+      <div className="w-full md:w-[40%] h-auto md:h-full py-12 px-6 md:p-12 flex flex-col items-center justify-center text-center">
         <p className="text-[10px] font-semibold uppercase tracking-widest mb-4 text-foreground/70">
           {eyebrow}
         </p>

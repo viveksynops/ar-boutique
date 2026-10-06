@@ -17,10 +17,13 @@ export default function Home() {
       <StoreHeader />
 
       <main className="flex-1">
-        <HeroBanner imageSrc="/images/hero_banner.png" />
+        <HeroBanner 
+          imageSrc="/images/hero_banner.png" 
+          mobileImageSrc="/images/hero_banner_mobile.jpg" 
+        />
 
-        <section className="pt-16 md:pt-24 pb-8 md:pb-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionHeading className="mb-12">Shop by Category</SectionHeading>
+        <section className="pt-10 md:pt-24 pb-6 md:pb-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeading className="mb-8 md:mb-12">Shop by Category</SectionHeading>
           <div className="flex gap-8 md:gap-12 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar justify-start md:justify-center" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {[
               { name: "Dresses", img: "/images/cat_dresses.jpg" },
@@ -40,14 +43,14 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-8 md:py-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionHeading className="mb-12">New Arrivals</SectionHeading>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-8 mb-12">
+        <section className="py-6 md:py-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeading className="mb-8 md:mb-12">New Arrivals</SectionHeading>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-8 mb-8 md:mb-12">
             {[
-              { name: "Ribbed Knit Tank Top", price: "AED 250", img: "/images/product_photo.jpg", swatches: ["#FFFFFF", "#000000"] },
-              { name: "Satin Slip Dress", price: "AED 350", img: "/images/product_photo.jpg", swatches: ["#000000", "#F5F5DC", "#800000"] },
-              { name: "Relaxed Tailored Blazer", price: "AED 450", img: "/images/product_photo.jpg", swatches: ["#F5F5DC"] },
-              { name: "High Waist Wide Leg Pants", price: "AED 300", img: "/images/product_photo.jpg", swatches: ["#FFFFFF", "#000000"] },
+              { name: "Ribbed Knit Top", price: "AED 490", img: "/images/cat_tops.jpg", swatches: ["#FFFFFF", "#000000"] },
+              { name: "Oversized Blazer", price: "AED 890", img: "/images/cat_outerwear.jpg", swatches: ["#F5F5DC"] },
+              { name: "Classic White Shirt", price: "AED 590", img: "/images/product_photo.jpg", swatches: ["#FFFFFF"] },
+              { name: "Tailored Wide Leg Pants", price: "AED 790", img: "/images/cat_bottoms.jpg", swatches: ["#FFFFFF", "#000000"] },
             ].map((prod, i) => (
               <ProductCard
                 key={i}
@@ -66,8 +69,8 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-16 mb-8 md:mb-12">
-          <div className="flex flex-col w-full gap-6">
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-10 mb-6 md:mt-16 md:mb-12">
+          <div className="flex flex-col w-full gap-4 md:gap-6">
             <TrustStrip />
             <PromoBanner
               imageSrc="/images/promo_banner.jpg"
@@ -79,10 +82,10 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="pt-8 pb-16 md:pt-12 md:pb-24 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+        <section className="pt-6 pb-12 md:pt-12 md:pb-24 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <SectionHeading className="mb-2">From the Journal</SectionHeading>
-          <p className="text-[13px] text-muted-foreground mb-12">Discover the latest trends, styling tips, and brand news.</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <p className="text-[13px] text-muted-foreground mb-8 md:mb-12">Discover the latest trends, styling tips, and brand news.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
              {[
                { title: "How to transition your wardrobe for the new season", category: "Style Guide", img: "/images/cat_outerwear.jpg" },
                { title: "Behind the scenes: The making of our latest collection", category: "Brand News", img: "/images/hero_banner.jpg" },
