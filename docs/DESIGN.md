@@ -24,32 +24,35 @@
 - A full `apply`, even of `buFywKm` again, resets the colours to neutral and the font to Inter. Put the colours and fonts from this file back afterwards, and check that `globals.css` still imports `brand.css`.
 
 ## Style
-- **Storefront:** warm, minimal, editorial. Off-white page, sand-toned panels, black buttons, square corners (Lyra), serif headings, small uppercase sans labels with wide letter spacing. Photography does the talking.
+- **Storefront:** warm, minimal, editorial. Off-white page, sand-toned panels, black buttons, square corners (Lyra), serif headings in Title Case at regular weight, a clean neutral sans for everything else. Only small eyebrows and the announcement bar are uppercase. Photography does the talking.
 - **Admin:** the same tokens with the sans font only, titles included (see Typography). shadcn/ui components, dense and practical.
 - **Icons:** Lucide (`lucide-react`), from the preset. Use `strokeWidth={1.5}` on the storefront to match the reference's thin line icons.
 
 ## Typography
 | Role | Font | Token | Weights |
 |---|---|---|---|
-| Headings, section titles | Cormorant Garamond | `--font-heading` (`font-heading`) | 500, 600 |
-| Body, UI, navigation, buttons, prices | Montserrat | `--font-sans` (`font-sans`) | 400, 500, 600 |
+| Headings, section titles | Newsreader | `--font-heading` (`font-heading`) | 400 (500 for Lyra component titles) |
+| Body, UI, navigation, buttons, prices | Inter | `--font-sans` (`font-sans`) | 400, 500, 600 |
 
-These are the closest free Google Fonts to the reference (a classic Garamond-style serif and a wide geometric sans). Both load through `next/font` in `src/lib/fonts.ts`, so swapping one is a one-line change (or `--only font` with a preset). The preset ships Inter: `src/lib/fonts.ts` replaces it with these two, and `globals.css` maps `--font-heading` to `var(--font-heading)` (the preset maps it to the body font).
+Typography follows the SYLVIE mockup (shared 6 Oct 2026); colours, corners and layout still follow the first reference. Newsreader and Inter are the closest free Google Fonts to it: a narrow editorial serif with a tall x-height (loaded with its optical-size axis, so big headings get the display cut automatically), and a neutral sans that also suits the dense admin. Both load through `next/font` in `src/lib/fonts.ts`, so swapping one is a one-line change (or `--only font` with a preset). The preset ships Inter, which we keep as the sans; `src/lib/fonts.ts` adds Newsreader for headings, and `globals.css` maps `--font-heading` to `var(--font-heading)` (the preset maps it to the body font).
 
 Lyra puts `font-heading` on component titles (Card, Dialog, Sheet and similar), so they follow `--font-heading`:
-- **Storefront:** those titles use Cormorant at Lyra's 14px. Size them up with `className` where they show (for example `text-xl` on the cart drawer title).
+- **Storefront:** those titles use Newsreader at Lyra's 14px. Size them up with `className` where they show (for example `text-xl` on the cart drawer title).
 - **Admin:** stays sans. The outermost element in `src/app/admin/layout.tsx` carries `data-surface="admin"`, and `brand.css` then points `--font-heading` at the sans for the whole page (`html:has([data-surface="admin"])`). Doing it on `<html>` also covers dialogs and sheets, which render outside the admin layout. This needs the `next/font` variables on `<html>` in the root layout.
 
 | Style | Desktop | Mobile | Font | Details |
 |---|---|---|---|---|
-| Hero title | 64px, line height 1.05 | 40px, 1.1 | Heading 500 | Sentence case, two short lines |
-| Promo title | 44px, 1.1 | 32px, 1.15 | Heading 500 | |
-| Page title (h1) | 40px, 1.15 | 32px, 1.2 | Heading 500 | Product name uses 32px / 28px |
-| Section title | 24px | 20px | Heading 500 | Uppercase, letter spacing 0.08em ("SHOP BY CATEGORY") |
-| Body | 16px, 1.6 | 15px, 1.6 | Sans 400 | |
-| Small | 13px, 1.5 | 13px | Sans 400 | Footer links, helper text |
-| Product name and price | 14px | 13px | Sans 400 (price 500) | |
-| Label, eyebrow, navigation, button | 12px | 12px | Sans 500 to 600 | Uppercase, letter spacing 0.1em to 0.14em |
+| Hero title | 60px, line height 1.05 | 40px, 1.1 | Heading 400 | Title Case, two short lines, letter spacing -0.01em |
+| Promo title | 36px, 1.15 | 28px, 1.2 | Heading 400 | Title Case |
+| Page title (h1) | 40px, 1.15 | 32px, 1.2 | Heading 400 | Product name uses 32px / 28px |
+| Section title | 32px, 1.2 | 24px, 1.2 | Heading 400 | Title Case, centred ("Shop by Category"). A small "View All" link with an arrow can sit on the right |
+| Body | 16px, 1.6 | 15px, 1.6 | Sans 400 | Hero and promo text lines use 18px / 16px |
+| Small | 13px, 1.5 | 13px | Sans 400 | Footer links, helper text, category item counts in `muted-foreground` |
+| Product name and price | 15px | 14px | Sans 500 (price 600) | |
+| Navigation | 15px | 16px (menu sheet) | Sans 400 | Title Case; the current page is underlined |
+| Button | 15px | 15px | Sans 500 | Title Case ("Shop New Arrivals"), no uppercase or letter spacing; optional arrow icon after the label |
+| Eyebrow, announcement bar | 12px | 12px | Sans 500 | Uppercase, letter spacing 0.12em ("LIFESTYLE") |
+| Badge | 12px | 12px | Sans 500 | Sentence case ("New", "Sold out") |
 
 Sizes were measured on the reference and scaled to a 1440px-wide layout. Adjust during the build if something looks off.
 
@@ -89,7 +92,7 @@ Sampled from the reference, then adjusted where needed to pass WCAG AA. Paired t
 | 1 | Announcement bar | `primary` strip, white uppercase 12px text, centred. Text comes from settings and must match the real policy (e.g. "FREE DELIVERY OVER AED 300 Â· EASY RETURNS WITHIN 14 DAYS"; Q2, Q6) |
 | 2 | Header | Logo left; menu in the centre (New in, the categories, Sale); account and cart with a count on the right. Mobile: menu button, centred logo, cart. No search or wishlist icons in v1 (Q22, Q25) |
 | 3 | Hero banner | Full-width photo with the text on its plain side: eyebrow, two-line title, one line of text, primary button. Mobile: photo first, text below. From `banners` (placement hero) |
-| 4 | Shop by category | Section title, round category photos (160px on desktop, 96px on mobile) with uppercase labels; up to 6 in a row, swipe on mobile. A Sale circle can link to `/shop?sale=1` (Q25) |
+| 4 | Shop by category | Section title, round category photos (160px on desktop, 96px on mobile) with the category names as labels (Sans 500, never uppercase); up to 6 in a row, swipe on mobile. A Sale circle can link to `/shop?sale=1` (Q25) |
 | 5 | New arrivals | The 8 newest products in the product grid, then an outline "View all" button |
 | 6 | Trust strip | `secondary` band with 4 line icons: free delivery and easy returns (both from settings), secure payment, and one more line from the client |
 | 7 | Promo banner | Photo with the text on an `accent` panel: eyebrow, title, text, button. From `banners` (placement promo) |
@@ -104,7 +107,7 @@ Lyra components are compact: a default Button is 32px tall and `lg` is 36px. The
 ### Buttons
 | Variant | Look | Use |
 |---|---|---|
-| Primary | Solid `primary`, white uppercase 12px label, letter spacing 0.12em | Add to cart, Checkout, Shop now |
+| Primary | Solid `primary`, white 15px Title Case label (Sans 500), optional arrow icon after it | Add to Cart, Checkout, Shop Now |
 | Outline | Lyra outline variant; the storefront adds a `border-input` edge so it stays visible | View all, secondary actions |
 | Ghost / Link | Text only, underline on hover | Tertiary actions |
 | Destructive | shadcn destructive variant: red text on a light red fill in Lyra (admin only) | Reject, archive, confirm refund |
@@ -127,7 +130,7 @@ Not in the reference; it follows the same style.
 - Changing colour swaps the gallery and the size list. Changing size never changes the photos. If the new colour doesn't come in the chosen size, clear the size and say so.
 
 ### Badges
-New, Sale, Sold out, Final sale: uppercase 11px on `background` with a 1px `border`, top left of the photo. Order and return statuses use `success`, `warning`, `destructive` and `muted`.
+New, Sale, Sold out, Final sale: 12px Sans 500 in sentence case on `background` with a 1px `border`, top left of the photo. Order and return statuses use `success`, `warning`, `destructive` and `muted`.
 
 ### Forms
 Inputs are 48px tall on the storefront and 40px in the admin (set with `className`; Lyra's default is smaller), with a white `card` background, a 1px `input` border and square corners. Label above the field, helper text below, error text in `destructive` under the field. Mark optional fields, not required ones. Validate on blur and on submit.

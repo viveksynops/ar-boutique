@@ -8,7 +8,7 @@ interface SectionHeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
 export function SectionHeading({ className, children, ...props }: SectionHeadingProps) {
   return (
     <h2 
-      className={cn("text-center font-heading text-2xl uppercase tracking-[0.08em]", className)}
+      className={cn("text-center font-heading text-2xl md:text-[32px] leading-[1.2] font-normal", className)}
       {...props}
     >
       {children}

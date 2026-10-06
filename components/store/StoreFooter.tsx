@@ -6,15 +6,15 @@ export function StoreFooter() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-1">
-            <Link href="/" className="text-2xl font-heading tracking-wide mb-4 inline-block">
-              AR BOUTIQUE
+            <Link href="/" className="mb-4 inline-block">
+              <img src="/images/logo.svg" alt="AR Boutique" className="h-8 w-auto" />
             </Link>
             <p className="text-[13px] text-muted-foreground max-w-xs">
               Timeless style meets modern elegance. Designed for the way you live.
             </p>
           </div>
           <div>
-            <h4 className="text-[12px] font-semibold uppercase tracking-[0.1em] mb-6">Shop</h4>
+            <h4 className="text-[13px] font-normal mb-6">Shop</h4>
             <ul className="flex flex-col gap-4 text-[13px] text-muted-foreground">
               <li><Link href="/shop/new-in" className="hover:text-foreground transition-colors">New In</Link></li>
               <li><Link href="/shop/clothing" className="hover:text-foreground transition-colors">Clothing</Link></li>
@@ -23,7 +23,7 @@ export function StoreFooter() {
             </ul>
           </div>
           <div>
-            <h4 className="text-[12px] font-semibold uppercase tracking-[0.1em] mb-6">Customer Care</h4>
+            <h4 className="text-[13px] font-normal mb-6">Customer Care</h4>
             <ul className="flex flex-col gap-4 text-[13px] text-muted-foreground">
               <li><Link href="/policies/shipping" className="hover:text-foreground transition-colors">Shipping & Delivery</Link></li>
               <li><Link href="/policies/returns" className="hover:text-foreground transition-colors">Returns</Link></li>
@@ -32,7 +32,7 @@ export function StoreFooter() {
             </ul>
           </div>
           <div>
-            <h4 className="text-[12px] font-semibold uppercase tracking-[0.1em] mb-6">Legal</h4>
+            <h4 className="text-[13px] font-normal mb-6">Legal</h4>
             <ul className="flex flex-col gap-4 text-[13px] text-muted-foreground">
               <li><Link href="/policies/terms" className="hover:text-foreground transition-colors">Terms & Conditions</Link></li>
               <li><Link href="/policies/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>

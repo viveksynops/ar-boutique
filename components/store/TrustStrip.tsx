@@ -22,7 +22,7 @@ export function TrustStrip() {
             <div key={i} className="flex flex-col items-center gap-3">
               <item.icon className="h-6 w-6 sm:h-8 sm:w-8 text-primary" strokeWidth={1.5} />
               <div>
-                <h3 className="text-[12px] font-semibold uppercase tracking-[0.1em]">{item.title}</h3>
+                <h3 className="text-[13px] font-normal">{item.title}</h3>
                 <p className="text-[13px] text-muted-foreground mt-1">{item.description}</p>
               </div>
             </div>

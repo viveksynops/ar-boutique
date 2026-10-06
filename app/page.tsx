@@ -26,7 +26,7 @@ export default function Home() {
         />
 
         <section className="py-16 md:py-24 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionHeading className="mb-12">SHOP BY CATEGORY</SectionHeading>
+          <SectionHeading className="mb-12">Shop by Category</SectionHeading>
           <div className="flex gap-8 md:gap-12 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar justify-start md:justify-center" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {[
               { name: "Dresses", img: "/images/cat_dresses.jpg" },
@@ -47,7 +47,7 @@ export default function Home() {
         </section>
 
         <section className="py-16 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionHeading className="mb-12">NEW ARRIVALS</SectionHeading>
+          <SectionHeading className="mb-12">New Arrivals</SectionHeading>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-8 mb-12">
             {[
               { name: "Ribbed Knit Tank Top", price: "AED 250", img: "/images/product_photo.jpg", swatches: ["#FFFFFF", "#000000"] },
@@ -67,7 +67,7 @@ export default function Home() {
           </div>
           <div className="flex justify-center">
             <StoreButton variant="outline" className="px-8 border-input text-foreground hover:bg-accent hover:text-accent-foreground">
-              VIEW ALL NEW ARRIVALS
+              View All New Arrivals
             </StoreButton>
           </div>
         </section>
@@ -83,7 +83,7 @@ export default function Home() {
         />
 
         <section className="py-16 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <SectionHeading className="mb-2">FROM THE JOURNAL</SectionHeading>
+          <SectionHeading className="mb-2">From the Journal</SectionHeading>
           <p className="text-[13px] text-muted-foreground mb-12">Discover the latest trends, styling tips, and brand news.</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
              {[

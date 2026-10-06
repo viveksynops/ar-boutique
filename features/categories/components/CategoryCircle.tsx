@@ -18,7 +18,7 @@ export function CategoryCircle({ name, imageSrc, href }: CategoryCircleProps) {
           className="object-cover group-hover:scale-105 transition-transform duration-500" 
         />
       </div>
-      <span className="text-[12px] font-semibold uppercase tracking-[0.1em]">{name}</span>
+      <span className="text-[15px] font-medium">{name}</span>
     </Link>
   )
 }

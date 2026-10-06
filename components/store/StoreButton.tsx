@@ -7,7 +7,7 @@ export const StoreButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Button
         ref={ref}
-        className={cn("h-12 uppercase tracking-[0.12em] text-[12px] rounded-none", className)}
+        className={cn("h-12 text-[15px] font-medium rounded-none", className)}
         {...props}
       />
     )

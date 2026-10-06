@@ -23,7 +23,7 @@ export function PromoBanner({ imageSrc, eyebrow, title, description, buttonText 
           <p className="text-[12px] font-semibold uppercase tracking-[0.14em] mb-4 text-primary">
             {eyebrow}
           </p>
-          <h2 className="font-heading text-3xl md:text-[44px] leading-[1.1] mb-4 text-primary">
+          <h2 className="font-heading text-[28px] md:text-[36px] leading-[1.2] md:leading-[1.15] font-normal mb-4 text-primary">
             {title}
           </h2>
           <p className="text-base text-primary/80 mb-8 max-w-sm">

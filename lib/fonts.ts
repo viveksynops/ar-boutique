@@ -1,17 +1,19 @@
-import { Cormorant_Garamond, Geist_Mono, Montserrat } from "next/font/google";
+import { Inter, Newsreader, Geist_Mono } from "next/font/google"
 
-export const fontSans = Montserrat({
+export const fontSans = Inter({
     subsets: ["latin"],
     variable: "--font-sans",
-});
+    display: "swap",
+})
 
-export const fontHeading = Cormorant_Garamond({
+export const fontHeading = Newsreader({
     subsets: ["latin"],
-    weight: ["500", "600"],
+    axes: ["opsz"],
     variable: "--font-heading",
-});
+    display: "swap",
+})
 
 export const fontMono = Geist_Mono({
     subsets: ["latin"],
     variable: "--font-geist-mono",
-});
+})
