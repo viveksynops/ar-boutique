@@ -11,7 +11,7 @@ import {
 
 export function HeroSlider() {
   const pluginAutoplay = React.useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: true })
+    Autoplay({ delay: 3000, stopOnInteraction: false })
   )
 
   const slides = [
@@ -24,13 +24,13 @@ export function HeroSlider() {
     {
       id: 2,
       imageSrc: "/images/hero_banner_dawn.png",
-      mobileImageSrc: "/images/hero_banner_dawn_mobile_v2.jpg",
+      mobileImageSrc: "/images/hero_banner_dawn_mobile_v4.jpg",
       alt: "The Dawn Collection: True Radiance",
     },
     {
       id: 3,
       imageSrc: "/images/hero_banner_timeless.png",
-      mobileImageSrc: "/images/hero_banner_timeless_mobile.jpg",
+      mobileImageSrc: "/images/hero_banner_timeless_mobile_v4.jpg",
       alt: "Timeless Style, Curated Boutique",
     },
   ]
