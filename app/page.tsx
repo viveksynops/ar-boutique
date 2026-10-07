@@ -27,7 +27,7 @@ export default function Home() {
       <main className="flex-1">
         <HeroSlider />
 
-        <section className="pt-10 md:pt-24 pb-6 md:pb-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section className="pt-8 md:pt-12 pb-6 md:pb-8 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading className="mb-8 md:mb-12">Shop by Occasion</SectionHeading>
           <div className="flex gap-8 md:gap-12 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar justify-start md:justify-center" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {[
@@ -48,7 +48,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-6 md:py-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section className="py-6 md:py-8 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading className="mb-8 md:mb-12">New Arrivals</SectionHeading>
           <Carousel
             opts={{
@@ -92,7 +92,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-10 mb-6 md:mt-16 md:mb-12">
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-8 mb-6 md:mt-10 md:mb-8">
           <div className="flex flex-col w-full gap-4 md:gap-6">
             <PromoBanner
               imageSrc="/images/promo_banner_new.jpg"
@@ -104,7 +104,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="pt-6 pb-12 md:pt-12 md:pb-24 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+        <section className="pt-6 pb-10 md:pt-8 md:pb-16 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <SectionHeading className="mb-2">From the Journal</SectionHeading>
           <p className="text-[13px] text-muted-foreground mb-8 md:mb-12">Discover the latest trends, styling tips, and brand news.</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
