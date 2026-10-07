@@ -17,21 +17,18 @@ export function HeroSlider() {
   const slides = [
     {
       id: 1,
-      imageSrc: "/images/hero_banner_black_v2.png",
-      mobileImageSrc: "/images/hero_banner_mobile_black_v2.png",
-      alt: "Timeless Fashion, Modern You",
+      imageSrc: "/images/hero_1.png",
+      alt: "Timeless Indian Boutique Elegance",
     },
     {
       id: 2,
-      imageSrc: "/images/hero_banner_dawn.png",
-      mobileImageSrc: "/images/hero_banner_dawn_mobile_v4.jpg",
-      alt: "The Dawn Collection: True Radiance",
+      imageSrc: "/images/hero_2.png",
+      alt: "Burgundy Boutique Elegance",
     },
     {
       id: 3,
-      imageSrc: "/images/hero_banner_timeless.png",
-      mobileImageSrc: "/images/hero_banner_timeless_mobile_v4.jpg",
-      alt: "Timeless Style, Curated Boutique",
+      imageSrc: "/images/hero_3.png",
+      alt: "Timeless Traditions Heritage Elegance",
     },
   ]
 
