@@ -1,4 +1,4 @@
-import { Truck, Package, Lock, Award, LucideIcon } from "lucide-react"
+import { BadgeCheck, ShieldCheck, Sparkles, LucideIcon } from "lucide-react"
 
 interface TrustItem {
   icon: LucideIcon
@@ -7,22 +7,21 @@ interface TrustItem {
 }
 
 const trustItems: TrustItem[] = [
-  { icon: Truck, title: "FREE SHIPPING", description: "On orders over $150" },
-  { icon: Package, title: "EASY RETURNS", description: "30 days return policy" },
-  { icon: Lock, title: "SECURE PAYMENT", description: "100% secure checkout" },
-  { icon: Award, title: "QUALITY GUARANTEE", description: "Premium materials" },
+  { icon: BadgeCheck, title: "Premium Craftsmanship", description: "Our products are made with the highest quality materials and expert craftsmanship." },
+  { icon: ShieldCheck, title: "Trusted Payments", description: "Shop safely with our fully encrypted, secure payment system." },
+  { icon: Sparkles, title: "Quality Assurance", description: "Crafted with care, each piece guarantees exceptional quality and attention to detail." },
 ]
 
 export function TrustStrip() {
   return (
-    <div className="bg-secondary py-8 px-6 md:px-12 w-full">
-      <div className="grid grid-cols-2 md:flex md:flex-row justify-between items-start md:items-center gap-y-8 gap-x-4 md:gap-4">
+    <div className="bg-foreground text-background py-10 px-6 md:px-12 w-full">
+      <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
         {trustItems.map((item, i) => (
-          <div key={i} className="flex items-center gap-4 text-left">
-            <item.icon className="h-6 w-6 text-foreground" strokeWidth={1.5} />
+          <div key={i} className="flex flex-col items-center gap-4">
+            <item.icon className="h-6 w-6 opacity-90" strokeWidth={1.5} />
             <div>
-              <h3 className="text-[11px] font-semibold tracking-wide uppercase text-foreground">{item.title}</h3>
-              <p className="text-[11px] text-muted-foreground mt-0.5">{item.description}</p>
+              <h3 className="text-[15px] font-medium tracking-wide mb-2">{item.title}</h3>
+              <p className="text-[13px] opacity-70 italic max-w-[280px] mx-auto leading-relaxed">{item.description}</p>
             </div>
           </div>
         ))}
