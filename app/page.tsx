@@ -110,7 +110,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
              {[
                { title: "How to transition your wardrobe for the new season", category: "Style Guide", img: "/images/cat_outerwear.jpg" },
-               { title: "Behind the scenes: The making of our latest collection", category: "Brand News", img: "/images/hero_banner.jpg" },
+               { title: "Behind the scenes: The making of our latest collection", category: "Brand News", img: "/images/hero_banner_timeless.png" },
                { title: "5 effortless looks for your next summer getaway", category: "Inspiration", img: "/images/promo_banner.jpg" }
              ].map((post, i) => (
                 <BlogCard
