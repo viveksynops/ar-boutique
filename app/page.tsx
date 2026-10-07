@@ -1,6 +1,7 @@
 import { AnnouncementBar } from "@/components/store/AnnouncementBar"
 import { StoreHeader } from "@/components/store/StoreHeader"
 import { HeroBanner } from "@/components/store/HeroBanner"
+import { HeroSlider } from "@/components/store/HeroSlider"
 import { SectionHeading } from "@/components/store/SectionHeading"
 import { CategoryCircle } from "@/features/categories/components/CategoryCircle"
 import { ProductCard } from "@/components/store/ProductCard"
@@ -17,10 +18,7 @@ export default function Home() {
       <StoreHeader />
 
       <main className="flex-1">
-        <HeroBanner 
-          imageSrc="/images/hero_banner.png" 
-          mobileImageSrc="/images/hero_banner_mobile.jpg" 
-        />
+        <HeroSlider />
 
         <section className="pt-10 md:pt-24 pb-6 md:pb-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading className="mb-8 md:mb-12">Shop by Category</SectionHeading>
