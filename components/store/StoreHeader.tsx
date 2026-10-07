@@ -5,7 +5,7 @@ import { Search, User, ShoppingBag, Menu } from "lucide-react"
 export function StoreHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4 lg:hidden">
           <button aria-label="Menu" className="p-2 -ml-2">
             <Menu className="h-5 w-5" strokeWidth={1.5} />
@@ -13,8 +13,8 @@ export function StoreHeader() {
         </div>
         
         <div className="flex-1 lg:flex-none">
-          <Link href="/" className="inline-block">
-            <Image src="/images/logo.svg" alt="AR Boutique" width={300} height={120} unoptimized className="h-10 sm:h-14 w-auto" />
+          <Link href="/" className="inline-block pt-1">
+            <Image src="/images/logo.png" alt="AR Boutique" width={300} height={120} unoptimized className="h-14 sm:h-16 w-auto" />
           </Link>
         </div>
 
