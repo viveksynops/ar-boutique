@@ -52,7 +52,7 @@ export function HeroSlider() {
         <CarouselContent>
           {slides.map((slide) => (
             <CarouselItem key={slide.id}>
-              <div className={`relative w-full md:aspect-[2.13/1] ${slide.mobileImageSrc ? 'aspect-[3/4]' : 'aspect-[2.13/1]'}`}>
+              <div className={`relative w-full md:aspect-[2.13/1] ${slide.mobileImageSrc ? 'aspect-[2/3]' : 'aspect-[2.13/1]'}`}>
                 {/* Desktop Image */}
                 <Image
                   src={slide.imageSrc}
