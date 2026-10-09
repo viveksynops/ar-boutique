@@ -24,9 +24,9 @@ export function HeroSlider() {
   const slides: Slide[] = [
     {
       id: 1,
-      imageSrc: "/images/hero_1_desktop_v5.png",
-      mobileImageSrc: "/images/hero_1_mobile_v4.jpg",
-      alt: "Timeless Indian Boutique Elegance",
+      imageSrc: "/images/hero_3_desktop_v5.png",
+      mobileImageSrc: "/images/hero_3_mobile_v5.png",
+      alt: "Timeless Traditions Heritage Elegance",
     },
     {
       id: 2,
@@ -36,9 +36,10 @@ export function HeroSlider() {
     },
     {
       id: 3,
-      imageSrc: "/images/hero_3_desktop_v5.png",
-      mobileImageSrc: "/images/hero_3_mobile_v5.png",
-      alt: "Timeless Traditions Heritage Elegance",
+      imageSrc: "/images/hero_1_desktop_v5.png",
+      mobileImageSrc: "/images/hero_1_mobile_v4.jpg",
+      alt: "Timeless Indian Boutique Elegance",
+
     }
   ]
 
