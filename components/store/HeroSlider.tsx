@@ -24,22 +24,22 @@ export function HeroSlider() {
   const slides: Slide[] = [
     {
       id: 1,
-      imageSrc: "/images/hero_1.png",
-      mobileImageSrc: "/images/hero_1_mobile_v3.jpg",
+      imageSrc: "/images/hero_1_desktop_v4.jpg",
+      mobileImageSrc: "/images/hero_1_mobile.jpg",
       alt: "Timeless Indian Boutique Elegance",
     },
     {
       id: 2,
-      imageSrc: "/images/hero_2.png",
+      imageSrc: "/images/hero_2_desktop_v4.jpg",
       mobileImageSrc: "/images/hero_2_mobile_v2.jpg",
       alt: "Burgundy Boutique Elegance",
     },
     {
       id: 3,
-      imageSrc: "/images/hero_3.png",
+      imageSrc: "/images/hero_3_desktop_v4.jpg",
       mobileImageSrc: "/images/hero_3_mobile_v2.jpg",
       alt: "Timeless Traditions Heritage Elegance",
-    },
+    }
   ]
 
   return (
@@ -52,7 +52,7 @@ export function HeroSlider() {
         <CarouselContent>
           {slides.map((slide) => (
             <CarouselItem key={slide.id}>
-              <div className="relative w-full aspect-[5/6] md:aspect-[2.4/1]">
+              <div className={`relative w-full md:aspect-[2.13/1] ${slide.mobileImageSrc ? 'aspect-[5/6]' : 'aspect-[2.13/1]'}`}>
                 {/* Desktop Image */}
                 <Image
                   src={slide.imageSrc}

@@ -24,7 +24,7 @@ export default function Home() {
       <AnnouncementBar text="FREE SHIPPING ON ORDERS OVER 150 AED | EASY RETURNS WITHIN 14 DAYS" />
       <StoreHeader />
 
-      <main className="flex-1">
+      <main className="flex-1 -mt-20">
         <HeroSlider />
 
         <section className="pt-8 md:pt-12 pb-6 md:pb-8 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
