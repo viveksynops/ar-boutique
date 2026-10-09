@@ -25,19 +25,19 @@ export function HeroSlider() {
     {
       id: 1,
       imageSrc: "/images/hero_1.png",
-      mobileImageSrc: "/images/hero_1_mobile.jpg",
+      mobileImageSrc: "/images/hero_1_mobile_v3.jpg",
       alt: "Timeless Indian Boutique Elegance",
     },
     {
       id: 2,
       imageSrc: "/images/hero_2.png",
-      mobileImageSrc: "/images/hero_2_mobile.jpg",
+      mobileImageSrc: "/images/hero_2_mobile_v2.jpg",
       alt: "Burgundy Boutique Elegance",
     },
     {
       id: 3,
       imageSrc: "/images/hero_3.png",
-      mobileImageSrc: "/images/hero_3_mobile.jpg",
+      mobileImageSrc: "/images/hero_3_mobile_v2.jpg",
       alt: "Timeless Traditions Heritage Elegance",
     },
   ]
@@ -52,14 +52,13 @@ export function HeroSlider() {
         <CarouselContent>
           {slides.map((slide) => (
             <CarouselItem key={slide.id}>
-              <div className="relative w-full">
+              <div className="relative w-full aspect-[5/6] md:aspect-[2.4/1]">
                 {/* Desktop Image */}
                 <Image
                   src={slide.imageSrc}
                   alt={slide.alt}
-                  width={1920}
-                  height={800}
-                  className={`w-full ${slide.mobileImageSrc ? 'hidden md:block h-auto' : 'h-auto block'} object-cover object-center`}
+                  fill
+                  className={`object-cover object-center ${slide.mobileImageSrc ? 'hidden md:block' : 'block'}`}
                   priority={slide.id === 1}
                 />
                 {/* Mobile Image (Optional) */}
@@ -67,9 +66,8 @@ export function HeroSlider() {
                   <Image
                     src={slide.mobileImageSrc}
                     alt={`${slide.alt} mobile`}
-                    width={750}
-                    height={1000}
-                    className="w-full h-auto block md:hidden object-cover object-center"
+                    fill
+                    className="object-cover object-center block md:hidden"
                     priority={slide.id === 1}
                   />
                 )}

@@ -65,7 +65,7 @@ export default function Home() {
                 { brand: "AR Boutique Exclusive", name: "Ivory Embroidered Anarkali Gown", compareAtPrice: "279.00 AED", price: "249.99 AED", savePercentage: "Save 10%", img: "/images/new_arrival_5.jpg", isNew: true, isSale: true },
                 { brand: "AR Boutique Exclusive", name: "Midnight Blue Fusion Saree Gown", compareAtPrice: "349.00 AED", price: "299.99 AED", savePercentage: "Save 14%", img: "/images/new_arrival_1.jpg", isNew: true, isSale: true },
               ].map((prod, i) => (
-                <CarouselItem key={i} className="pl-4 md:pl-6 basis-[85%] sm:basis-1/2 md:basis-1/3 lg:basis-1/5">
+                <CarouselItem key={i} className="pl-4 md:pl-6 basis-[45%] sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
                   <ProductCard
                     brand={prod.brand}
                     name={prod.name}
