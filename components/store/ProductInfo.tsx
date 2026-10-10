@@ -7,7 +7,7 @@ import { ProductTrustStrip } from "./ProductTrustStrip"
 export interface ProductType {
   id: string
   name: string
-  brand: string
+  brand?: string
   sku: string
   price: string
   compareAtPrice?: string

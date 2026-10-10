@@ -10,7 +10,7 @@ import { ProductCard } from "@/components/store/ProductCard"
 const MOCK_PRODUCT = {
   id: "1",
   name: "Midnight Blue Fusion Saree Gown",
-  brand: "Lilium By Shrivha",
+  brand: "AR Boutique",
   sku: "LS1150",
   price: "299.99 AED",
   compareAtPrice: "349.00 AED",
@@ -89,7 +89,7 @@ export default async function ProductPage({
                 {
                   id: "2",
                   name: "Emerald Green Satin Gown",
-                  brand: "Lilium By Shrivha",
+                  brand: "AR Boutique",
                   price: "349.00 AED",
                   imageSrc: "/images/JAA25DR01202-6.jpeg",
                   href: "/collections/emerald-green-satin-gown"
@@ -97,7 +97,7 @@ export default async function ProductPage({
                 {
                   id: "3",
                   name: "Ruby Red Anarkali Suit",
-                  brand: "Aura Collection",
+                  brand: "AR Boutique",
                   price: "499.00 AED",
                   compareAtPrice: "599.00 AED",
                   imageSrc: "/images/JAA25DR01202-7.jpeg",
@@ -106,7 +106,7 @@ export default async function ProductPage({
                 {
                   id: "4",
                   name: "Pearl White Lehenga Choli",
-                  brand: "Lilium By Shrivha",
+                  brand: "AR Boutique",
                   price: "699.00 AED",
                   imageSrc: "/images/JAA25DR01202-8.jpeg",
                   href: "/collections/pearl-white-lehenga-choli"
@@ -114,7 +114,7 @@ export default async function ProductPage({
                 {
                   id: "5",
                   name: "Midnight Blue Lehenga",
-                  brand: "Lilium By Shrivha",
+                  brand: "AR Boutique",
                   price: "799.00 AED",
                   imageSrc: "/images/JAA25DR01202.jpeg",
                   href: "/collections/midnight-blue-lehenga"
@@ -122,7 +122,7 @@ export default async function ProductPage({
                 {
                   id: "6",
                   name: "Rose Pink Silk Kurta",
-                  brand: "Aura Collection",
+                  brand: "AR Boutique",
                   price: "249.00 AED",
                   imageSrc: "/images/JAA25DR01202-1.jpeg",
                   href: "/collections/rose-pink-silk-kurta"
