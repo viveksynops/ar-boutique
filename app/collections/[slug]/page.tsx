@@ -84,7 +84,7 @@ export default async function ProductPage({
           {/* Recommended Products */}
           <div className="mt-24 pt-16 border-t border-border">
             <h2 className="font-heading text-2xl sm:text-3xl text-foreground text-center mb-10">You May Also Like</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
               {[
                 {
                   id: "2",
@@ -118,17 +118,26 @@ export default async function ProductPage({
                   price: "799.00 AED",
                   imageSrc: "/images/JAA25DR01202.jpeg",
                   href: "/collections/midnight-blue-lehenga"
+                },
+                {
+                  id: "6",
+                  name: "Rose Pink Silk Kurta",
+                  brand: "Aura Collection",
+                  price: "249.00 AED",
+                  imageSrc: "/images/JAA25DR01202-1.jpeg",
+                  href: "/collections/rose-pink-silk-kurta"
                 }
-              ].map((rec) => (
-                <ProductCard
-                  key={rec.id}
-                  name={rec.name}
-                  brand={rec.brand}
-                  price={rec.price}
-                  compareAtPrice={rec.compareAtPrice}
-                  imageSrc={rec.imageSrc}
-                  href={rec.href}
-                />
+              ].map((rec, index) => (
+                <div key={rec.id} className={index === 4 ? "hidden md:block" : "block"}>
+                  <ProductCard
+                    name={rec.name}
+                    brand={rec.brand}
+                    price={rec.price}
+                    compareAtPrice={rec.compareAtPrice}
+                    imageSrc={rec.imageSrc}
+                    href={rec.href}
+                  />
+                </div>
               ))}
             </div>
           </div>
