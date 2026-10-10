@@ -18,7 +18,7 @@ Status: `[ ]` to do, `[~]` in progress, `[x]` done
 - [ ] Product photos per colour (portrait 4:5, see `docs/DESIGN.md`), product copy and size charts
 - [ ] Client's accountant confirms VAT status and the invoice template; legal adviser provides policy texts
 - [ ] Domain name and sender email address
-- [ ] Cloudflare account in the client's name (you added as a member); before launch, the domain moved to Cloudflare DNS (free plan) for `media.<client-domain>` (Q16, ADR-037)
+- [ ] Cloudinary Free account in the client's name. Setup named transformations (`t_ar_w...`), turn ON strict mode, and configure usage alerts (ADR-038).
 
 ## Phase 1: Setup
 Done when: an empty app builds, CI is green, a Vercel preview deploys and a test error reaches Sentry.
@@ -59,7 +59,7 @@ Done when: an invited admin logs in with 2FA and everyone else is blocked.
 
 ## Phase 4: Catalogue
 Done when: an admin creates a product with colours, photos and sizes, and it's live on the storefront straight away.
-- [ ] TASK-029 Media adapter `src/services/media` on Cloudflare R2 + sharp (ADR-037): `signUpload`, `finishUpload` (size and type check, WebP copies per kind, metadata dropped, one-year cache header), `imageUrl`, `privateUrl`, `remove`; `src/lib/media-loader.ts` as the `next/image` loader; dev and staging buckets, CORS and API tokens; R2 variables in `src/lib/env.ts` and `.env.example`; unit tests for the loader and keys, integration test against the dev buckets
+- [ ] TASK-029 Media adapter `src/services/media` on Cloudinary (ADR-038): `signUpload`, `finishUpload` (verifies size/type/dimensions on Cloudinary, saves to DB, deletes if invalid), `imageUrl`, `privateUrl`, `remove`; `src/lib/media-loader.ts` as the `next/image` loader wrapping Cloudinary URLs; dev/staging folders; Cloudinary variables in `src/lib/env.ts` and `.env.example`; unit tests for the loader snapping.
 - [ ] TASK-030 Admin categories: list, create, rename, reorder, hide, category photo; block delete while products exist
 - [ ] TASK-031 Admin colours and sizes: list, create, rename, reorder, hide; optional swatch colour; names saved exactly as typed; block delete once used
 - [ ] TASK-032 Admin products list with search (name, style code through the colourways, SKU) and status filter
@@ -131,7 +131,7 @@ Done when: a customer submits a return with photos and the admin approves, recei
 - [ ] TASK-072 Migration: `return_requests`, `return_items`, `return_photos`, `return_events` + RLS + pgTAP tests
 - [ ] TASK-073 Eligibility service (Delivered, inside the window, not final sale, quantity left) with unit tests
 - [ ] TASK-074 Return form: items, quantity, reason per item, comment, photos compressed in the browser, validation
-- [ ] TASK-075 Signed uploads for return photos into the private bucket (ownership + eligibility check); size and type checked after upload; re-saved with sharp to drop metadata
+- [ ] TASK-075 Signed uploads for return photos into Cloudinary (ownership + eligibility check); size and type checked after upload; viewed via signed URLs that strip metadata
 - [ ] TASK-076 `submit_return()` function + action: re-check every rule, verify photo keys, assign RET number
 - [ ] TASK-077 Return emails: confirmation (customer) and alert (admin)
 - [ ] TASK-078 Customer return page: timeline, instructions, refund status, cancel
@@ -185,7 +185,7 @@ Done when: every check in `docs/TEST_PLAN.md` and `docs/SECURITY.md` passes on a
 
 ## Phase 15: Launch
 Done when: a live order is placed and refunded on production.
-- [ ] TASK-109 Production setup: Supabase project, Clerk production instance, Stripe live keys and webhook, Resend domain (SPF, DKIM, DMARC), R2 production buckets (`media.<client-domain>` connected, `r2.dev` off, CORS for the live domain, a production-only API token), Sentry production environment and alert email, Vercel environment variables
+- [ ] TASK-109 Production setup: Supabase project, Clerk production instance, Stripe live keys and webhook, Resend domain (SPF, DKIM, DMARC), Cloudinary production account, Sentry production environment and alert email, Vercel environment variables
 - [ ] TASK-110 Domain and SSL on Vercel, `www` redirect, Google Search Console with the sitemap
 - [ ] TASK-111 Production QA from `docs/TEST_PLAN.md`, including one live order and refund
 - [ ] TASK-112 Go-live, monitoring check in Sentry, 2 weeks of hypercare; update `docs/MEMORY.md`

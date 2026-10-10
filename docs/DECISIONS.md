@@ -197,3 +197,38 @@
 **Decision:** What we decided.
 **Reason:** Why.
 ```
+
+## ADR-038: Cloudinary for media
+
+**Status:** Accepted (2026-10-11)
+**Supersedes:** ADR-037
+
+**Decision:** We are dropping Cloudflare R2 and sharp in favour of Cloudinary Free. All media is managed exclusively through src/services/media and the src/lib/media-loader.ts. The database stores the Cloudinary public_id, never Delivery URLs.
+
+**Why:** Cloudflare R2 requires a payment method to begin, and the client's card is not ready. Cloudinary Free allows up to 25 credits per rolling 30 days without a card (1 credit = 1,000 transformations, 1 GB storage, or 1 GB bandwidth). Bandwidth is the main cost. Upgrade path: Plus (-99/month) or migrate back to R2 later.
+
+**Key constraints and flows:**
+- **No sharp, no R2, no AWS SDK:** Remove @aws-sdk/client-s3, @aws-sdk/s3-request-presigner, and sharp. Add cloudinary (Node SDK, server only).
+- **Public IDs and Folders:** One base folder per environment (CLOUDINARY_FOLDER = r-dev | r-staging | r-prod). Every upload must set BOTH public_id and sset_folder to the same path, or the Media Library dumps everything in the root:
+  - {folder}/products/{productId}/{productColourId}/{id}
+  - {folder}/categories/{categoryId}/{id}
+  - {folder}/banners/{bannerId}/{id}
+  - {folder}/blog/{postId}/{id}
+  - {folder}/returns/{returnId}/{id} (type: uthenticated)
+  Every upload gets a new ID. overwrite: false. Never re-upload the same file.
+- **Upload Flow (admin, aal2 only):** 
+  - Browser checks type (jpg, png, webp) and size (max 10 MB).
+  - Server action signs fixed params (public_id, sset_folder, 	imestamp, llowed_formats, overwrite=false, incoming transformation c_limit,w_2400). Cloudinary signatures are valid for 1 hour.
+  - Browser POSTs to Cloudinary.
+  - Server verifies the result (format, bytes, width, height) in inishUpload and only then saves it to the DB. If any check or save fails, the server deletes the asset from Cloudinary.
+- **Adapter API Stability:** Keep existing adapter names (signUpload, inishUpload, privateUrl, 
+emove). inishUpload becomes the verify-and-save step. A future switch back to R2 will only touch this folder and media-loader.ts.
+- **Return Photos:** Customer must be signed in (Clerk). Same checks apply. Uploaded as type uthenticated. Admins view them through signed URLs with a metadata-stripping transformation. Never public.
+- **Delivery & Transformations:** Custom 
+ext/image loader (src/lib/media-loader.ts) snaps widths to exactly 200, 400, 600, 800, 1200, 1600, 2400 using named transformations 	_ar_w{width} (each defined as _auto,q_auto,c_limit,w_{width}). Strict transformations must be ON in every environment to prevent random size requests.
+- **Widths by Type:** Products/Blog: 400, 800, 1200, 1600. Categories: 200, 400, 600. Banners: 800, 1200, 1600, 2400. Files in public/ keep unoptimized.
+- **Banned practices:** Never use w_auto, dpr_auto, responsive breakpoints, Cloudinary default-image placeholders, or hand-written transformation strings. One URL builder only.
+- **Deletions:** Deleting an image in admin calls destroy with invalidate: true.
+- **Monitoring:** Usage email alerts are ON. Dashboard checked monthly. No custom domains on Free/Plus (URLs use 
+es.cloudinary.com).
+- **Environments:** Dev and staging share one Cloudinary account using folders. Production gets its own account before launch.

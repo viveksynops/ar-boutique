@@ -77,15 +77,13 @@ After every task: typecheck -> lint -> tokens -> unit -> DB -> integration -> E2
 - Only `aal2` admins can upload, apply or export; files over the limits, macro files and fake .xlsx files are rejected; formulas never run
 - The export opens in Excel with no formulas, and values like `-` and `=1+1` stay as text
 
-## Media (R2 and sharp)
+## Media (Cloudinary)
 - Uploads only work with a signed link from our server; a link expires after 5 minutes and only works for its own key
 - A file over 10 MB, or one that isn't a real JPEG, PNG or WebP image, is deleted and rejected
 - Each admin photo gets its WebP copies at the widths for its kind; a sideways phone photo comes out upright; the copies have no metadata
 - The loader picks the smallest stored width at least as wide as requested; files in `public/` are never sent through it
 - Replacing a photo creates a new key; deleting one removes the original and every copy
 - Product photo keys outside the colourway's folder are rejected
-- `media:regenerate` remakes every copy from the originals without changing the keys
-- Each environment's API token can't read or write another environment's buckets
 
 ## Cart
 - The cart survives a reload; quantities are capped at the SKU's stock and at 5 per line
@@ -131,7 +129,7 @@ After every task: typecheck -> lint -> tokens -> unit -> DB -> integration -> E2
 - The Return button shows only on Delivered orders inside the window with returnable items
 - Final-sale items, undelivered orders and expired windows are blocked, including through direct API calls
 - Photos are required for Damaged and Wrong item; a comment is required for Other
-- Photos upload to the private R2 bucket; no public URL works; signed links expire after 1 hour; the saved photos have no GPS or other metadata
+- Return photos are uploaded as type authenticated; no public URL works; admins view them via privateUrl stripping metadata
 - A customer can't get an upload signature for someone else's order
 - A return number is created and the confirmation and admin alert emails are sent
 - The customer can cancel while Requested or Approved, not after Received
@@ -187,7 +185,7 @@ Test every page, storefront and admin, at:
 - [ ] Customer sign-up, sign-in, sign-out; admin login with 2FA
 - [ ] Browse, pick colour and size, cart, checkout, webhook, emails, invoice
 - [ ] Cash on delivery: place, confirm, ship, cash collected, invoice; refused parcel
-- [ ] Photos load from `media.<client-domain>` (production `r2.dev` address off)
+- [ ] Photos load from Cloudinary via the media loader and snapping widths
 - [ ] Admin: categories, colours, sizes, products, colour photos, SKUs, stock, stock sheet upload and export, banners, posts
 - [ ] Orders, returns and refunds end to end
 - [ ] Forms, error handling, loading states, empty states

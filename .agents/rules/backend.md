@@ -40,10 +40,9 @@ Applies to `src/services/**`, `src/lib/**`, `src/app/api/**`, `src/features/**/a
 - Every COD admin action needs `aal2` and writes `audit_log`.
 
 ## Media and email
-- Media only through `src/services/media` (Cloudflare R2 + sharp, ADR-037); store keys, never URLs.
-- Admin photos: original to the private bucket, then sharp makes the WebP copies (fixed widths per kind) into the public bucket with `Cache-Control: public, max-age=31536000, immutable`. Every upload gets a new key; never overwrite a file.
-- After every upload, check size and type on the server and delete bad files (R2 links can't limit size).
-- Return photos stay in the private bucket, re-saved with sharp to drop metadata, shown through 1-hour signed links.
+- Media only through `src/services/media` (Cloudinary, ADR-038); store keys, never URLs.
+- Admin photos: direct signed upload to Cloudinary. Server verifies format/bytes/dimensions and saves to DB, deleting the asset if verification fails.
+- Return photos uploaded as type `authenticated`. Admins view them through `privateUrl` which strips metadata.
 - One-time emails write a unique `email_log` row before sending.
 
 ## Errors and monitoring

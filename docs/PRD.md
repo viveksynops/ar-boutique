@@ -260,7 +260,7 @@ Each question has a default. If there's no answer, build the default and record 
 | Q16 | Domain name and sender email address? | Needed before launch |
 | Q17 | Design: the client's reference is in `DESIGN.md`. Does the client approve it, and when do we get the AR logo? Designs for other pages? | Needed now: logo (SVG). Other pages follow `DESIGN.md` |
 | Q18 | Launch date? | TBD |
-| Q19 | What replaces Cloudinary, and when? | Answered (10 Oct 2026): Cloudflare R2 with sharp, from the start (ADR-037). Needs the client's domain on Cloudflare DNS (Q16) |
+| Q19 | What replaces Cloudinary, and when? | Answered (10 Oct 2026): Cloudinary Free (ADR-038). |
 | Q20 | What's in the cropped top of the proposal? | Need the full proposal |
 | Q21 | Size guide content? | Size chart per category, after launch |
 | Q22 | Is site search needed? | No: category, size and colour filters cover 20 products (the reference's search icon is left out) |

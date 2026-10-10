@@ -17,7 +17,7 @@ Online store for AR Boutique, a women's wear brand selling to customers in the U
 | `.env.example` | What configuration is needed? | Setup |
 
 ## Tech Stack
-Next.js 16 · TypeScript · Tailwind CSS · shadcn/ui · Supabase · Clerk · Stripe · Resend · Cloudflare R2 + sharp · Sentry · Vercel
+Next.js 16 · TypeScript · Tailwind CSS · shadcn/ui · Supabase · Clerk · Stripe · Resend · Cloudinary · Sentry · Vercel
 
 ## Prerequisites
 Required:

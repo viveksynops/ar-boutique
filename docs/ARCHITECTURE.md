@@ -14,7 +14,7 @@
 | Admin auth | Supabase Auth: email + password + TOTP 2FA, invite only |
 | Payments | Stripe Checkout hosted page in AED (card, Apple Pay, Google Pay), plus cash on delivery handled by our own checkout and admin |
 | Email | Resend + React Email |
-| Media | Cloudflare R2 (S3 API) behind `src/services/media`; sharp makes resized WebP copies once, at upload (ADR-037) |
+| Media | Cloudinary via `src/services/media`; uploads are signed and saved direct from the browser, and delivered via named transformations (ADR-038) |
 | PDFs | English/Arabic invoices and credit notes (engine picked in TASK-062) |
 | Forms and validation | React Hook Form + Zod |
 | Client state | Zustand (cart only) |
@@ -45,8 +45,8 @@ Next.js     -> Stripe       create Checkout Sessions and refunds
 Stripe      -> Next.js      webhooks: payment, expiry, refunds, disputes
 Clerk       -> Next.js      webhooks: user created, updated, deleted
 Next.js     -> Resend       order, return and refund emails
-Next.js     -> Cloudflare R2  signed upload links, resized copies (sharp), private links
-Browser     -> Cloudflare R2  direct uploads with signed links; photos from media.<client-domain>
+Next.js     -> Cloudinary     signed uploads, return photos, metadata deletion
+Browser     -> Cloudinary     direct uploads with signed params; photos from res.cloudinary.com via media-loader
 Next.js     -> Sentry       errors, traces, logs, cron check-ins
 Sentry      -> Next.js      uptime check on /api/health
 Vercel Cron -> Next.js      reconcile checkouts and COD deadlines, expire returns, purge photos
@@ -99,7 +99,7 @@ src/
 |   |-- db/                      # Supabase queries and RPC calls, one file per domain
 |   |-- stripe/
 |   |-- email/                   # Resend client + React Email templates
-|   |-- media/                   # media adapter: Cloudflare R2 (S3 API) + sharp
+|   |-- media/                   # media adapter: Cloudinary
 |   |-- pdf/                     # invoices, credit notes
 |   |-- sheets/                  # read and write the stock sheet (.xlsx, .csv), values exactly as written
 |   `-- analytics/
@@ -265,7 +265,7 @@ The product list comes from the cached catalogue. Live availability for its SKUs
 ### Admin: product with colours and sizes
 1. Save the details (name, category, description) -> a Draft product. Nothing is generated.
 2. Add a colourway: a colour from the store's list (or a new one, saved as typed), the client's style code (required) and the details. A sizes-only product has one colourway; "Add another colour" turns on one tab per colour.
-3. Per colourway, upload photos (see "Cloudflare R2 and sharp"): each photo gets a key inside `products/{productId}/{productColourId}/`, and on save the server checks every key is inside that folder.
+3. Per colourway, upload photos (see "Cloudinary"): each photo sets public_id and asset_folder to `products/{productId}/{productColourId}/`, and on save the server checks every key is inside that folder.
 4. Per colourway, add SKUs: the client's SKU (required, typed as given; the field is never prefilled), the size (or no size), price and compare-at price (typed once for all sizes, or per SKU), stock 0.
 5. Enter opening stock in the colours x sizes grid. Every change goes through `adjust_stock()` with a reason.
 6. Publish -> the server checks the publishing rules (a visible colourway with a photo, an active SKU, a price on every active SKU) -> `updateTag()`.
@@ -335,10 +335,10 @@ Per SKU: `available = stock_levels.on_hand - stock_levels.reserved`.
 
 ### Return photo upload
 1. The return form creates a draft ID in the browser.
-2. A Server Action signs an upload link (5 minutes, one key, content type fixed) into the **private** bucket at `returns/{orderId}/{draftId}/{id}.jpg`, only if the customer owns the order and it's eligible.
-3. The browser compresses each photo and uploads it straight to R2 (never through Vercel, which caps request bodies at 4.5 MB).
-4. On submit, the server checks every key is inside that folder, checks each file's size and type (deleting bad ones), re-saves each photo with sharp so the GPS location and other metadata are removed, then `submit_return()` creates the return. Return photos are not resized.
-5. Admins see photos through signed links that expire after 1 hour.
+2. A Server Action generates signed parameters for a direct Cloudinary upload (valid for 1 hour, type `authenticated`) to `{folder}/returns/{orderId}/{draftId}/<id>`, only if the customer owns the order and it's eligible.
+3. The browser compresses each photo and POSTs it straight to Cloudinary (never through Vercel).
+4. On submit, the server checks every `public_id` belongs to that folder, verifies each file's size and format (deleting bad ones), then `submit_return()` creates the return.
+5. Admins see photos through `privateUrl` which strips metadata.
 6. A daily job deletes photos 90 days after the return closes.
 
 ### Catalogue change
@@ -400,83 +400,20 @@ Raw body + signature check; event IDs stored in `stripe_events`; API version pin
 ### Clerk (`/api/webhooks/clerk`)
 Verified with `verifyWebhook()`. `user.created` and `user.updated` upsert `customers` and link guest orders. `user.deleted` anonymises the profile and keeps orders.
 
-### Cloudflare R2 and sharp (ADR-037)
-**Buckets:** two per environment. The public one is reached only through our media address; the private one is never public.
+### Cloudinary (ADR-038)
+All media lives in Cloudinary Free, used exclusively through `src/services/media`. We don't store Delivery URLs, only the `public_id` (e.g. stored in `product_images.media_key`).
 
-| Bucket | Holds | Reached through |
-|---|---|---|
-| `ar-<env>-media` (public) | The resized WebP copies of product, category, banner and blog photos | `media.<client-domain>` in production (Cloudflare cache in front); the `r2.dev` address in dev and staging only |
-| `ar-<env>-private` | Originals of those photos (`originals/...`), return photos (`returns/...`) | Signed links from our server only |
+**Setup per environment:** One base folder per environment (`CLOUDINARY_FOLDER` = `ar-dev` | `ar-staging` | `ar-prod`). Dev and staging share an account; Production gets its own account. 
+Every upload must set BOTH `public_id` and `asset_folder` to the exact same path (e.g. `{folder}/products/{productId}/{productColourId}/<id>`) so the Media Library stays organized.
 
-**Keys:** every upload gets a new random ID, so a file never changes after it's written. The database stores the key only (`product_images.media_key = products/101/201/a1b2c3`), never a URL.
+**Media adapter API (`src/services/media`):** `signUpload(kind, context)`, `finishUpload(key)`, `imageUrl(key, width)`, `privateUrl(key, ttl)`, `remove(key)`.
+- `signUpload`: generates signed parameters for a browser POST direct to Cloudinary.
+- `finishUpload`: verifies the format, size, and dimensions of the resulting asset. If valid, saves to DB. If invalid or DB fails, deletes the asset from Cloudinary immediately.
+- `remove`: calls Cloudinary `destroy` with `invalidate: true`.
 
-```text
-ar-prod-private/originals/products/101/201/a1b2c3.jpg   original (kept to remake sizes)
-ar-prod-media/products/101/201/a1b2c3/w400.webp         copies made by sharp
-ar-prod-media/products/101/201/a1b2c3/w800.webp
-ar-prod-media/products/101/201/a1b2c3/w1200.webp
-ar-prod-media/products/101/201/a1b2c3/w1600.webp
-```
-
-| Kind | Key prefix | Widths (WebP) | Uploaded by |
-|---|---|---|---|
-| Product photos | `products/{productId}/{productColourId}/` | 400, 800, 1200, 1600 | Admin |
-| Category photos | `categories/{categoryId}/` | 200, 400, 600 | Admin |
-| Banners (desktop and mobile) | `banners/{bannerId}/` | 800, 1200, 1600, 2400 | Admin |
-| Blog images | `blog/{postId}/` | 400, 800, 1200, 1600 | Admin |
-| Return photos | `returns/{orderId}/{draftId}/` (private) | Not resized | Customer |
-
-**Upload (admin photos):**
-1. The browser compresses the photo (about 2 MB, JPEG) and calls `signUpload(kind, context)`. The server checks `aal2`, makes the key with a new ID and returns a signed PUT link to `originals/{key}.jpg` in the private bucket (5 minutes, content type fixed).
-2. The browser uploads the original straight to R2.
-3. The browser calls `finishUpload(key)`. The server checks the file (at most 10 MB, JPEG, PNG or WebP; R2 links can't limit size, so this check is required), reads it, and sharp makes one WebP copy per width: `.rotate()` (upright phone photos), `.resize({ width, withoutEnlargement: true })`, `.webp({ quality: 78 })`, which also drops GPS and other metadata. Each copy is saved to the public bucket as `{key}/w{width}.webp` with `Content-Type: image/webp` and `Cache-Control: public, max-age=31536000, immutable`.
-4. The server saves the key with the photo's width and height. If any step fails, it deletes what was written and returns an error. One photo per call, so each call stays short (about a second).
-
-**Delivery:** `next.config` uses our loader (`images.loader: 'custom'`, `loaderFile: './src/lib/media-loader.ts'`). The loader reads the kind from the key prefix and returns `NEXT_PUBLIC_MEDIA_URL/{key}/w{width}.webp` with the smallest stored width at least as wide as requested (or the largest). Files in `public/` (logo, icons) use `next/image` with `unoptimized`. Vercel's image optimizer isn't used.
-
-**Replace and delete:** a replacement is a new upload with a new ID. `remove(key)` deletes the original and every copy. The purge job deletes return photos 90 days after the return closes. No lifecycle rules on any bucket: files stay until our code deletes them.
-
-**New sizes later:** `npm run media:regenerate` remakes the copies from the originals; nothing is uploaded again.
-
-**Media adapter API:** `signUpload(kind, context)`, `finishUpload(key)`, `imageUrl(key, width)`, `privateUrl(key, ttl)`, `remove(key)`. Only `src/services/media` talks to R2 (`@aws-sdk/client-s3` with `endpoint: https://<account_id>.r2.cloudflarestorage.com`, `region: 'auto'`, and `@aws-sdk/s3-request-presigner` for signed links).
-
-**Setup per environment:** the two buckets; a CORS rule allowing `PUT` from that environment's site only; one API token ("Object Read & Write", only that environment's buckets). Environment variables: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_BUCKET`, `R2_PRIVATE_BUCKET`, `NEXT_PUBLIC_MEDIA_URL`. Production also connects `media.<client-domain>` to the public bucket (the domain must use Cloudflare DNS; Vercel's records stay "DNS only") and turns its `r2.dev` address off.
-
-### Resend
-React Email templates live in `src/services/email/templates`. The sender uses the client's domain with SPF, DKIM and DMARC. Every one-time email writes a unique `email_log` row first. The Free plan caps at 100 emails a day; switch to Pro ($20/mo) before any promotion.
-
-### Sentry
-Free Developer plan (ADR-027): one user, email alerts only, 5,000 errors, 5M spans, 50 replays, 5 GB of logs, one cron monitor and one uptime monitor a month, 30 days of history. There's no pay-as-you-go on this plan: going over a limit means upgrading.
-
-| Area | Setup |
-|---|---|
-| SDK | `@sentry/nextjs`, installed with `npx @sentry/wizard@latest -i nextjs`. `src/instrumentation-client.ts` runs in the browser. `src/instrumentation.ts` loads `sentry.server.config.ts` or `sentry.edge.config.ts` and exports `onRequestError = Sentry.captureRequestError` (Server Components, Route Handlers, Server Actions, proxy). `src/app/global-error.tsx` reports render errors |
-| What gets reported | Unexpected errors only. Webhook, refund and job failures are captured with tags (`order_id`, `return_id`, `refund_id`, `job`) |
-| Tracing | `tracesSampleRate`: 1.0 in development, 0.1 in production |
-| Logs | `enableLogs: true`; `Sentry.logger` for key events (order paid, refund failed, job summary) |
-| Session Replay | Storefront only, on errors only: `replaysSessionSampleRate: 0`, `replaysOnErrorSampleRate: 1.0`, `maskAllText`, `blockAllMedia` |
-| Privacy | `sendDefaultPii: false`; `beforeSend` and `beforeSendLog` strip emails, phone numbers, addresses, cookies, auth headers and tokens |
-| Tunnel | `tunnelRoute: '/sentry-tunnel'` so ad blockers don't drop events; the `proxy.ts` matcher excludes it |
-| Releases and source maps | `withSentryConfig` uploads source maps during Vercel builds (`SENTRY_AUTH_TOKEN`) and deletes them afterwards; release = git commit SHA; environment = `development`, `preview` or `production` |
-| Cron monitor | `Sentry.withMonitor('reconcile-checkouts', job, { schedule: { type: 'crontab', value: '*/15 * * * *' }, checkinMargin: 5, maxRuntime: 5 })`. Leave automatic Vercel cron monitoring off: it creates a monitor per cron job, and the free plan includes one |
-| Uptime monitor | `GET /api/health`: 200 `{ "status": "ok" }` when the app can query Supabase, 503 `{ "status": "degraded" }` otherwise |
-| Alerts (email) | New issue in production, regression, more than 10 events of one issue in an hour, cron check-in missed or failed, uptime down |
-| Noise and quota | Inbound filters on (browser extensions, localhost, web crawlers) and spike protection on. Sentry is off locally and in tests unless `NEXT_PUBLIC_SENTRY_DSN` is set |
-
-## Background Jobs
-Vercel Cron, protected by `CRON_SECRET`. Every run writes a `job_runs` row.
-
-| Job | Route | Runs | Does | Watched by |
-|---|---|---|---|---|
-| Reconcile checkouts | `/api/cron/reconcile-checkouts` | Every 15 min | Checks stale pending orders against Stripe and fixes them; cancels COD orders past `confirm_by` and releases their stock; deletes stock sheet previews not applied within 24 hours | Sentry cron monitor |
-| Expire returns | `/api/cron/expire-returns` | Daily | Approved returns not received in N days become Expired | The reconciliation job reports an error to Sentry if there's no successful run in 26 hours |
-| Purge return photos | `/api/cron/purge-return-photos` | Daily | Deletes photos 90 days after the return closes | Same |
-
-## Caching
-- Enable `cacheComponents`. Catalogue, banner and blog reads use `'use cache'` + `cacheTag` (`categories`, `colours`, `sizes`, `products`, `product:{slug}`, `banners`, `blog`, `post:{slug}`) through `createPublicClient()`.
-- Admin Server Actions call `updateTag()`. Webhooks and jobs use `revalidateTag(tag, { expire: 0 })`.
-- Never cached: availability (`variant_availability()`), cart, checkout (including COD eligibility), account and admin pages.
-- Images use our `next/image` loader (`src/lib/media-loader.ts`), which points at the stored WebP copies on `media.<client-domain>`. Copies are cached for a year by browsers and Cloudflare; new uploads get new keys, so nothing goes stale.
+- **Delivery:** Images use our `next/image` loader (`src/lib/media-loader.ts`), snapping widths to named transformations (e.g., `t_ar_w400`). Images are delivered directly from `res.cloudinary.com`. No custom domains are used on the free tier.
+- **Strict Transformations:** Turned ON to prevent unlisted size requests and protect bandwidth.
+- **Return Photos:** Uploaded as type `authenticated`. Admins view them through `privateUrl` which strips metadata.
 
 ## Routes
 - **Storefront:** `/`, `/shop` (filters as query params: `?size=`, `?colour=`, `?sort=`, `?sale=1`), `/shop/[category]`, `/products/[slug]` (`?colour=<slug>` opens a colour), `/cart`, `/checkout` (delivery details and payment choice), `/checkout/success`, `/checkout/cancelled`, `/checkout/received/[orderNumber]` (COD, signed in), `/sign-in`, `/sign-up`, `/account/orders`, `/account/orders/[orderNumber]`, `/account/orders/[orderNumber]/return`, `/account/returns/[returnNumber]`, `/blog`, `/blog/[slug]`, `/about`, `/contact`, `/policies/[slug]`
@@ -491,7 +428,7 @@ Vercel Cron, protected by `CRON_SECRET`. Every run writes a `job_runs` row.
 | Clerk | Development instance | Development instance | Production instance on the client's domain |
 | Stripe | Test mode + Stripe CLI | Test mode | Live mode |
 | Resend | Test API key | Test API key | Live key, verified domain |
-| Cloudflare R2 | `ar-dev-media`, `ar-dev-private` (`r2.dev` address) | `ar-staging-media`, `ar-staging-private` (`r2.dev` address) | `ar-prod-media` on `media.<client-domain>`, `ar-prod-private` |
+| Cloudinary | Shared Account, Folder: `ar-dev` | Shared Account, Folder: `ar-staging` | Dedicated Account, Folder: `ar-prod` |
 | Sentry | Off (no DSN) unless testing Sentry itself | One project, environment `preview` | Same project, environment `production` |
 
 ## External Services and Costs
@@ -501,7 +438,7 @@ Vercel Cron, protected by `CRON_SECRET`. Every run writes a `job_runs` row.
 | Supabase | Pro | $25 + usage | Daily backups |
 | Clerk | Hobby | $0 up to 50k monthly retained users | Pro ($25/mo) removes Clerk branding |
 | Resend | Free, then Pro | $0, then $20 | Free is capped at 100 emails a day |
-| Cloudflare R2 | Free tier | $0 | 10 GB storage, 1M writes and 10M reads a month free; then $0.015 per GB-month. No egress fees. DNS on Cloudflare's free plan |
+| Cloudinary | Free tier | $0 | 25 credits per rolling 30 days (1 credit = 1GB bandwidth or storage). Upgrade to Plus ($89) if exceeded. |
 | PostHog | Free tier | $0 | |
 | Sentry | Developer (free) | $0 | One user, email alerts only; limits under "Sentry" above. Team ($26/mo billed annually) adds people, Slack and higher limits |
 | Stripe | Pay as you go | 2.9% + AED 1 per domestic card | Paid by the client; the fee isn't returned on refunds |

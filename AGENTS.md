@@ -33,7 +33,7 @@ Each file in `.agents/rules/` is always on. Read the ones for the files you touc
 - Work on one task from `TASKS.md` at a time. For large changes, write a plan and wait for approval.
 - TypeScript strict. Reuse existing components, services and helpers. Don't duplicate logic.
 - Keep functions small. Don't modify unrelated files.
-- Don't add dependencies without asking (approved libraries: ADR-021, plus `@sentry/nextjs` from ADR-027; `exceljs` is proposed in ADR-036; `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner` and `sharp` from ADR-037).
+- Don't add dependencies without asking (approved libraries: ADR-021, plus `@sentry/nextjs` from ADR-027; `exceljs` is proposed in ADR-036; `cloudinary` from ADR-038).
 - If the docs don't answer something, stop and ask. Never invent requirements.
 - Never expose secrets. Only `NEXT_PUBLIC_*` values may reach the browser.
 - Spell it `colour` in names and copy; `color` only where CSS or a library requires it.
