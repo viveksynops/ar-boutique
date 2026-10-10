@@ -118,19 +118,21 @@ Lyra components are compact: a default Button is 32px tall and `lg` is 36px. The
 Storefront buttons are 48px tall through `StoreButton` (touch targets never below 44px). While submitting, show a spinner and disable the button.
 
 ### Product card
-Photo (4:5, `muted` placeholder while it loads), then name, then price (compare-at price struck through in `muted-foreground`), then colour swatches and badges. The photo is the default colour's main photo; on desktop, hovering shows that colour's second photo. Swatches show which colours exist (up to 4, then "+2"); they aren't separate links, so the whole card stays one link. No wishlist heart in v1.
+Photo (4:5, `muted` placeholder while it loads), then name, then price (compare-at price struck through in `muted-foreground`; "From AED 90" when the product's SKUs have different prices), then colour swatches (only when the product has more than one visible colour) and badges. The photo is the default colour's main photo; on desktop, hovering shows that colour's second photo. Swatches show which colours exist (up to 4, then "+2"); they aren't separate links, so the whole card stays one link. No wishlist heart in v1.
 
 ### Colour picker
-Round swatches filled with the colour's `swatch_hex`: 14px on cards, 32px on the product page, with a 1px `border` ring so white and ivory stay visible. Selected: a 2px `foreground` ring with a 2px gap. The colour name always shows next to the picker ("Colour: Black"). A colour with every size sold out stays visible with a diagonal line through it.
+Shown only when the product has more than one visible colourway; with one, the colour shows in Details instead. Round swatches filled with the colour's `swatch_hex`: 14px on cards, 32px on the product page, with a 1px `border` ring so white and ivory stay visible. A colour without a `swatch_hex` shows as a square chip with its name (like the size chips) on the product page, and isn't drawn on cards. Selected: a 2px `foreground` ring with a 2px gap. The colour name always shows next to the picker exactly as stored ("Colour: Sea green"). A colour with every size sold out stays visible with a diagonal line through it.
 
 ### Size picker
-Square chips, at least 48 x 48, with a 1px `input` border; selected is solid `primary`. Only the sizes the selected colour comes in, in size order. Sold-out sizes stay visible, greyed and struck through, and can't be selected. "Only N left" shows under the picker when the selected SKU has 3 or fewer. The selected state never relies on colour alone.
+Shown only when the selected colourway has more than one active SKU. With one SKU it's selected automatically, and its size (if it has one) shows as text ("Size: Free Size"). Square chips, at least 48 x 48, with a 1px `input` border; selected is solid `primary`. Only the sizes the selected colour comes in, in size order, labelled exactly as stored. Sold-out sizes stay visible, greyed and struck through, and can't be selected. "Only N left" shows under the picker when the selected SKU has 3 or fewer. The selected state never relies on colour alone.
 
 ### Product page
 Not in the reference; it follows the same style.
-- **Desktop:** gallery on the left (4:5 main photo and thumbnails), details on the right: name, price, colour picker, size picker, Add to cart (full width), delivery and returns summary, then description and care in an accordion.
+- **Desktop:** gallery on the left (4:5 main photo and thumbnails), details on the right: name, price, colour picker and size picker (each only when there's a choice), Add to cart (full width), delivery and returns summary, then an accordion with Description, Details (open by default) and Care.
 - **Mobile:** swipeable gallery with dots, details below, sticky Add to cart bar.
-- Changing colour swaps the gallery and the size list. Changing size never changes the photos. If the new colour doesn't come in the chosen size, clear the size and say so.
+- Changing colour swaps the gallery, the size list and the Details. Changing size never changes the photos. If the new colour doesn't come in the chosen size, clear the size and say so.
+- **Description:** the client's text exactly as written, in paragraphs. A product without one shows Details only.
+- **Details:** the colourway's details exactly as the client wrote them, as label and value rows: "Package contains" first, then groups Top (Fabric, Colour, Pattern, Neck, Sleeve, Type), Bottom (Style, Fabric, Colour) and Dupatta (Fabric, Colour, Pattern). The labels are ours (`features/catalog/details.ts`); the values are never changed in case or spelling. Empty and `-` values are skipped, and a group with nothing left is skipped.
 
 ### Badges
 New, Sale, Sold out, Final sale: 12px Sans 500 in sentence case on `background` with a 1px `border`, top left of the photo. Order and return statuses use `success`, `warning`, `destructive` and `muted`.
@@ -140,21 +142,42 @@ Inputs are 48px tall on the storefront and 40px in the admin (set with `classNam
 
 ### Feedback
 - Toasts for admin saves.
-- A confirm dialog before destructive admin actions: refund, reject, archive, deactivate staff.
+- A confirm dialog before destructive admin actions: refund, reject, archive, deactivate staff, cancel an order, returned to sender, and applying a stock sheet (with its counts).
 - Skeletons while lists and product grids load.
 
 ### Admin tables
-shadcn data table: sticky header, search, filters, pagination (25 rows), status badges, and clicking a row opens the detail page. SKUs show in capitals in `font-mono`.
+shadcn data table: sticky header, search, filters, pagination (25 rows), status badges, and clicking a row opens the detail page. SKUs and style codes show exactly as stored in `font-mono`, never forced to capitals. Orders show a "Cash on delivery" or "Card" badge.
 
 ### Admin stock grid
-Colours down, sizes across. Each cell shows the SKU, on hand, held and available; low stock in `warning`, zero in `destructive`. Editing a number asks for a reason. On mobile it becomes a list grouped by colour.
+Colours down, sizes across (a colourway without sizes has one "No size" column). Each cell shows the SKU, on hand, held and available; low stock in `warning`, zero in `destructive`. Editing a number asks for a reason. On mobile it becomes a list grouped by colour.
+
+### Admin product form
+- **Details card:** name, category, description, final sale, SEO, status.
+- **Colourway card:** colour (pick from the list or type a new one, saved as typed), style code (required, no placeholder), photos, then the details fields in the sheet's order, each a combobox of values already used that also takes new text. A sizes-only product shows one colourway card; "Add another colour" turns it into tabs, one per colour.
+- **SKUs table** per colourway: SKU (required, empty until the admin types the client's SKU; never prefilled), Size (or No size), Price, Compare-at price, Active, Stock. A "Same price for all sizes" field above it fills every row's price. Locked SKUs (already sold) show a lock icon and a tooltip.
+
+### Stock sheet upload (admin)
+- `/admin/products/upload`: a drop zone (".xlsx or .csv, up to 5 MB"), a link to download the current catalogue in the same format, and the upload history below (who, when, file, counts, status).
+- **Preview:** summary counts at the top (products, colourways, SKUs to create; values to change; unchanged), then tabs: Changes (old and new value per field), Errors, Warnings, Not used (columns the store ignores).
+- Errors and warnings are tables with Row, Column, Value (exactly as in the file, with a space at the start or end marked) and the reason in plain words ("SKU J0395 is on rows 38 and 39. Each SKU can only be used once").
+- **Apply** is a primary button, off while there are errors, with a confirm dialog showing the counts. After applying, a toast and a link to the new Draft products.
+
+### Checkout page
+Not in the reference; it follows the same style.
+- **Desktop:** two columns. Left: Delivery details (full name, UAE mobile with +971, emirate select, area, street and building, flat or villa, landmark optional), then Payment. Right: order summary (lines with photo, colour and size, subtotal, delivery, COD fee when chosen, VAT note, total), sticky.
+- **Mobile:** a collapsible order summary at the top showing the total, then the form.
+- **Payment:** two radio cards, "Card, Apple Pay or Google Pay" and "Cash on delivery" (helper text: "Pay in cash when your order arrives. We'll call or WhatsApp you to confirm."). When COD isn't available, its card is disabled with the reason underneath ("Sign in to pay with cash on delivery", "Cash on delivery is available for orders up to AED 1,000").
+- **Button:** "Continue to Payment" for card (goes to Stripe), "Place Order" for COD.
+
+### COD order received page
+Heading "Order Received", the order number, "We'll call or WhatsApp you on +971 50 123 4567 within 24 hours to confirm your order.", the amount to pay on delivery in large type, the order summary, and buttons to My orders and Continue shopping. No invoice until the cash is collected.
 
 ## Imagery
 - **Product photos:** portrait 4:5, at least 1600 x 2000, plain light backdrop, the same framing for every colour. At least 1 photo per colour, ideally 4 to 6 (front, back, side, detail). Uploaded once per colour; every size of that colour uses them.
 - **Category photos:** square 1:1, at least 600 x 600, subject centred (shown as circles).
 - **Hero banner:** desktop 8:3 (at least 2400 x 900) with a plain side for the text; mobile 4:5 (at least 1080 x 1350).
 - **Promo banner:** desktop 4:1 (at least 2400 x 600) with a plain side for the text; mobile 4:5.
-- Always served through the Cloudinary loader with automatic format and quality. The hero image loads with priority; everything else lazy-loads.
+- Uploaded photos are served from R2 as WebP copies at fixed widths (products and blog 400 to 1600, categories 200 to 600, banners 800 to 2400) through our media loader. Files in `public/` (logo, icons) use `unoptimized`. The hero image loads with priority; everything else lazy-loads.
 - Alt text is required for every image (e.g. "Satin slip dress in black, front").
 - Never reuse the reference's photos; they aren't ours.
 - **Logo:** the final logo (7 Oct 2026): the AR monogram above THE AR BOUTIQUE, black only. Vector in `public/the-ar-boutique-logo.svg` with a PNG beside it. Full size in the footer and emails. It's nearly square, so in the header the words get too small to read: use the horizontal version there once it exists (Q17), and until then the stacked logo at its largest size that fits. Never recolour, stretch or crop it. Black on light backgrounds only; on `primary` or dark photos use the white version (Q17).
@@ -175,12 +198,14 @@ Colours down, sizes across. Each cell shows the SKU, on hand, held and available
 - Prices: `AED 1,250`, with 2 decimals only when needed (`AED 249.50`). Always use `formatAED()`.
 - Dates: `5 Oct 2026`. Times: `4:30 PM`, shown in UAE time (Asia/Dubai).
 - Phone numbers: `+971 50 123 4567`.
-- Order numbers `AR-10001`; return numbers `RET-1001`; SKUs like `ST0012-BLK-M`.
+- Order numbers `AR-10001`; return numbers `RET-1001`; SKUs and style codes exactly as the client writes them (`JAA25DR01112-M`, `JNE4207-TP-M`).
+- The client's values (colour names, details, descriptions) show exactly as stored. Never change their case with CSS (`uppercase`, `capitalize`) or in code.
+- Prices from several SKUs: "From AED 90".
 - Line items read "Satin Slip Dress, Black / M".
 - Tone: warm, short and confident. No jargon.
 
 ## Emails
-Simple branded layout: logo, `background` colour, `foreground` text, one black `primary` button, an order summary table where each line shows the colour's photo, the colour, the size and the SKU, and a footer with contact and policy links. Mobile friendly, 600px max width. Email clients can't read CSS variables or load our fonts reliably, so use the hex values above, Georgia for headings and Arial for body text.
+Simple branded layout: logo, `background` colour, `foreground` text, one black `primary` button, an order summary table where each line shows the colour's photo, the colour, the size and the SKU, and a footer with contact and policy links. COD emails show the amount to pay on delivery in place of a paid total. Mobile friendly, 600px max width. Email clients can't read CSS variables or load our fonts reliably, so use the hex values above, Georgia for headings and Arial for body text.
 
 ## Still Needed From the Client (Q17)
 - Logo: final version received 7 Oct 2026 (black on a white PNG). Still needed: a transparent SVG, a horizontal version for the header, a white version for dark backgrounds, and a favicon

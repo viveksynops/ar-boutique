@@ -5,20 +5,21 @@
 ## Stack
 | Layer | Choice |
 |---|---|
-| Frontend | Next.js 16 App Router (version ≥ 16.3.8) + React |
+| Frontend | Next.js 16 App Router (version >= 16.3.8) + React |
 | Language | TypeScript (strict) |
 | Styling | Tailwind CSS v4 + shadcn/ui, themed by a shadcn preset (tokens and fonts in `DESIGN.md`) |
 | Backend | Next.js Server Components, Server Actions and Route Handlers |
 | Database | Supabase PostgreSQL with Row Level Security and Postgres functions |
 | Customer auth | Clerk, connected to Supabase as a third-party auth provider |
 | Admin auth | Supabase Auth: email + password + TOTP 2FA, invite only |
-| Payments | Stripe Checkout hosted page, AED |
+| Payments | Stripe Checkout hosted page in AED (card, Apple Pay, Google Pay), plus cash on delivery handled by our own checkout and admin |
 | Email | Resend + React Email |
-| Media | Cloudinary behind `src/services/media` (to be replaced later) |
+| Media | Cloudflare R2 (S3 API) behind `src/services/media`; sharp makes resized WebP copies once, at upload (ADR-037) |
 | PDFs | English/Arabic invoices and credit notes (engine picked in TASK-062) |
 | Forms and validation | React Hook Form + Zod |
 | Client state | Zustand (cart only) |
 | Blog editor | Tiptap |
+| Spreadsheets | ExcelJS for the stock sheet upload and export (ADR-036, proposed) |
 | Testing | Vitest, Playwright, pgTAP |
 | Analytics | GA4 + GTM (per Pranav's SOP "GA4 + GTM Ecommerce Analytics Setup (Next.js Client Stores)"), PostHog |
 | Monitoring | Sentry: errors, tracing, logs, one cron monitor and one uptime monitor (free Developer plan) |
@@ -27,120 +28,125 @@
 ## How It Works
 ```text
 User (shopper or admin)
-↓
+|
 Next.js UI (Server Components; client components only where needed)
-↓
-Server Action / Route Handler (check auth → validate with Zod)
-↓
+|
+Server Action / Route Handler (check auth -> validate with Zod)
+|
 Service (src/services/*)
-↓
+|
 Supabase (Postgres functions + RLS)
-↓
+|
 PostgreSQL
 ```
 
 ```text
-Next.js     → Stripe       create Checkout Sessions and refunds
-Stripe      → Next.js      webhooks: payment, expiry, refunds, disputes
-Clerk       → Next.js      webhooks: user created, updated, deleted
-Next.js     → Resend       order, return and refund emails
-Next.js     → Cloudinary   signed uploads, image delivery, private links
-Next.js     → Sentry       errors, traces, logs, cron check-ins
-Sentry      → Next.js      uptime check on /api/health
-Vercel Cron → Next.js      reconcile checkouts, expire returns, purge photos
+Next.js     -> Stripe       create Checkout Sessions and refunds
+Stripe      -> Next.js      webhooks: payment, expiry, refunds, disputes
+Clerk       -> Next.js      webhooks: user created, updated, deleted
+Next.js     -> Resend       order, return and refund emails
+Next.js     -> Cloudflare R2  signed upload links, resized copies (sharp), private links
+Browser     -> Cloudflare R2  direct uploads with signed links; photos from media.<client-domain>
+Next.js     -> Sentry       errors, traces, logs, cron check-ins
+Sentry      -> Next.js      uptime check on /api/health
+Vercel Cron -> Next.js      reconcile checkouts and COD deadlines, expire returns, purge photos
 ```
 
 ## Folder Structure
 ```text
 src/
-├── app/
-│   ├── (store)/                 # storefront: own root layout with ClerkProvider
-│   │   ├── page.tsx             # home
-│   │   ├── shop/                # Shop all + [category]
-│   │   ├── products/[slug]/
-│   │   ├── cart/
-│   │   ├── checkout/            # success, cancelled
-│   │   ├── account/             # orders, returns (Clerk session required)
-│   │   ├── blog/
-│   │   ├── policies/[slug]/
-│   │   ├── sign-in/[[...sign-in]]/
-│   │   └── sign-up/[[...sign-up]]/
-│   ├── (admin)/admin/           # admin: own root layout, no Clerk
-│   │   ├── login/
-│   │   ├── mfa/
-│   │   └── (protected)/         # everything else, needs an aal2 admin session
-│   ├── api/
-│   │   ├── webhooks/            # stripe, clerk
-│   │   ├── cron/                # reconcile-checkouts, expire-returns, purge-return-photos
-│   │   ├── health/              # uptime check for Sentry
-│   │   ├── invoices/[orderId]/
-│   │   └── credit-notes/[id]/
-│   ├── global-error.tsx         # reports render errors to Sentry
-│   └── globals.css              # shadcn theme tokens (owned by the shadcn CLI)
-├── components/
-│   ├── ui/                      # shadcn/ui primitives (never hand-edited)
-│   ├── store/                   # shared storefront components
-│   └── admin/                   # shared admin components
-├── features/                    # one folder per domain
-│   ├── catalog/                 # products, colours, sizes, SKUs, photos, stock
-│   ├── cart/
-│   ├── checkout/
-│   ├── orders/
-│   ├── returns/
-│   ├── refunds/
-│   ├── content/                 # banners, blog, pages
-│   ├── dashboard/
-│   ├── settings/
-│   └── staff/
-├── services/                    # server only: data access + integrations
-│   ├── db/                      # Supabase queries and RPC calls, one file per domain
-│   ├── stripe/
-│   ├── email/                   # Resend client + React Email templates
-│   ├── media/                   # media adapter (Cloudinary today)
-│   ├── pdf/                     # invoices, credit notes
-│   └── analytics/
-├── lib/
-│   ├── supabase/                # public, customer, admin, browser and service clients
-│   ├── auth/                    # requireCustomer(), requireAdmin()
-│   ├── env.ts                   # validated environment variables
-│   ├── fonts.ts                 # next/font: --font-sans and --font-heading
-│   ├── money.ts                 # fils, formatAED(), VAT split
-│   └── sku.ts                   # SKU suggestion and validation
-├── styles/
-│   └── brand.css                # our extra tokens (success, warning); presets never touch it
-├── types/                       # shared types + generated database types
-├── utils/
-├── instrumentation.ts           # loads the Sentry server and edge config; exports onRequestError
-├── instrumentation-client.ts    # Sentry in the browser
-├── sentry.server.config.ts
-├── sentry.edge.config.ts
-└── proxy.ts                     # Clerk on storefront routes, Supabase session on /admin
+|-- app/
+|   |-- (store)/                 # storefront: own root layout with ClerkProvider
+|   |   |-- page.tsx             # home
+|   |   |-- shop/                # Shop all + [category]
+|   |   |-- products/[slug]/
+|   |   |-- cart/
+|   |   |-- checkout/            # delivery details and payment choice; success, cancelled, received (COD)
+|   |   |-- account/             # orders, returns (Clerk session required)
+|   |   |-- blog/
+|   |   |-- policies/[slug]/
+|   |   |-- sign-in/[[...sign-in]]/
+|   |   `-- sign-up/[[...sign-up]]/
+|   |-- (admin)/admin/           # admin: own root layout, no Clerk
+|   |   |-- login/
+|   |   |-- mfa/
+|   |   `-- (protected)/         # everything else, needs an aal2 admin session
+|   |-- api/
+|   |   |-- admin/               # catalogue-export (admin session + aal2)
+|   |   |-- webhooks/            # stripe, clerk
+|   |   |-- cron/                # reconcile-checkouts, expire-returns, purge-return-photos
+|   |   |-- health/              # uptime check for Sentry
+|   |   |-- invoices/[orderId]/
+|   |   `-- credit-notes/[id]/
+|   |-- global-error.tsx         # reports render errors to Sentry
+|   `-- globals.css              # shadcn theme tokens (owned by the shadcn CLI)
+|-- components/
+|   |-- ui/                      # shadcn/ui primitives (never hand-edited)
+|   |-- store/                   # shared storefront components
+|   `-- admin/                   # shared admin components
+|-- features/                    # one folder per domain
+|   |-- catalog/                 # products, colourways, sizes, SKUs, photos, stock, details, stock sheet upload and export
+|   |-- cart/
+|   |-- checkout/
+|   |-- orders/
+|   |-- returns/
+|   |-- refunds/
+|   |-- content/                 # banners, blog, pages
+|   |-- dashboard/
+|   |-- settings/
+|   `-- staff/
+|-- services/                    # server only: data access + integrations
+|   |-- db/                      # Supabase queries and RPC calls, one file per domain
+|   |-- stripe/
+|   |-- email/                   # Resend client + React Email templates
+|   |-- media/                   # media adapter: Cloudflare R2 (S3 API) + sharp
+|   |-- pdf/                     # invoices, credit notes
+|   |-- sheets/                  # read and write the stock sheet (.xlsx, .csv), values exactly as written
+|   `-- analytics/
+|-- lib/
+|   |-- supabase/                # public, customer, admin, browser and service clients
+|   |-- auth/                    # requireCustomer(), requireAdmin()
+|   |-- env.ts                   # validated environment variables
+|   |-- fonts.ts                 # next/font: --font-sans and --font-heading
+|   |-- media-loader.ts          # next/image loader and photo widths (browser safe)
+|   |-- money.ts                 # fils, formatAED(), VAT split
+|   `-- sku.ts                   # SKU checks only (never generates or suggests)
+|-- styles/
+|   `-- brand.css                # our extra tokens (success, warning); presets never touch it
+|-- types/                       # shared types + generated database types
+|-- utils/
+|-- instrumentation.ts           # loads the Sentry server and edge config; exports onRequestError
+|-- instrumentation-client.ts    # Sentry in the browser
+|-- sentry.server.config.ts
+|-- sentry.edge.config.ts
+`-- proxy.ts                     # Clerk on storefront routes, Supabase session on /admin
 supabase/
-├── migrations/
-├── tests/                       # RLS and function tests (pgTAP)
-└── seed.sql
+|-- migrations/
+|-- tests/                       # RLS and function tests (pgTAP)
+`-- seed.sql
 tests/
-├── unit/
-├── integration/
-└── e2e/
+|-- unit/
+|-- integration/
+`-- e2e/
 ```
 
 Each domain folder follows the same shape:
 ```text
 features/<domain>/
-├── components/     # domain UI
-├── actions.ts      # Server Actions: auth → Zod → service
-├── schemas.ts      # Zod schemas shared by forms and actions
-└── types.ts
+|-- components/     # domain UI
+|-- actions.ts      # Server Actions: auth -> Zod -> service
+|-- schemas.ts      # Zod schemas shared by forms and actions
+`-- types.ts
 ```
 
 ## Architectural Rules
-- UI components never call Supabase, Stripe, Resend or Cloudinary directly.
+- UI components never call Supabase, Stripe, Resend or R2 directly.
 - Database and third-party calls live in `src/services/*`, marked `import 'server-only'`.
-- Every Server Action and Route Handler: check auth → validate input with Zod → call a service → return a typed result.
+- Every Server Action and Route Handler: check auth -> validate input with Zod -> call a service -> return a typed result.
 - Orders, stock, returns and refunds change only through Postgres functions that check the current state inside one transaction.
 - Stock is per SKU. Cart lines, holds, order lines, returns and stock changes always point at a SKU (`product_variants.id`).
 - Photos belong to a product colour, never to a size or directly to a product.
+- The client's data is stored exactly as written (ADR-029). Code never generates, suggests, tidies or fixes SKUs, style codes or any value from the client's sheet; it reports problems instead.
 - Business logic stays out of components.
 - Reusable UI goes in `components/`; domain UI goes in `features/<domain>/components/`.
 - Server Components by default; add `"use client"` only for interaction.
@@ -192,7 +198,7 @@ features/<domain>/
 | Active categories, colours and sizes; published products with their visible colours, photos and active SKUs; banners; posts | Read | Read | Full | |
 | Stock levels | | | Read; change via functions | Holds and sales via functions |
 | Orders, order items, returns | | Read own | Read; update via functions | Create, mark paid |
-| Stock ledger, audit log, Stripe events, email log, job runs | | | Read | Write |
+| Stock ledger, audit log, Stripe events, email log, job runs, stock sheet uploads, courier payouts | | | Read; uploads and payouts via functions | Write |
 | Settings | | | Read, write | Read (checkout, emails) |
 | Admin users | | | Read | Write (invites) |
 
@@ -201,31 +207,33 @@ Money columns are integer fils (1 AED = 100 fils).
 
 | Table | Key columns |
 |---|---|
-| `customers` | `clerk_user_id` (text, PK), email, first and last name, phone, `deleted_at` |
+| `customers` | `clerk_user_id` (text, PK), email, first and last name, phone, `cod_disabled` (the admin turned COD off for this customer), `deleted_at` |
 | `admin_users` | `user_id` (uuid, from `auth.users`), email, role, `is_active`, `invited_by` |
 | `categories` | name, slug (unique), description, `image_key` (the Shop by category photo), sort, `is_active`, SEO title and description |
-| `colours` | Store-wide list: name (unique), slug (unique, for `?colour=` links), `code` (unique, 2 to 4 capital letters used in SKUs, e.g. `BLK`), `swatch_hex`, sort, `is_active` |
-| `sizes` | Store-wide list: label (unique, e.g. `S`, `One Size`, `54`), `code` (unique, used in SKUs, e.g. `S`, `OS`, `54`), sort (display order: XS before S before M), `is_active` |
-| `products` | slug, name, description, `style_code` (unique, generated as ST0001, ST0002 and so on; the SKU prefix), **`category_id`** (FK to `categories`, nullable until the client confirms the list), `price_fils`, `compare_at_fils`, `is_final_sale`, status (draft, published, archived), SEO fields, `published_at` |
-| `product_colours` | One colour of one product: `product_id`, `colour_id`, sort (the first visible colour is the default), `is_active` (visible on the storefront); unique (product, colour) |
+| `colours` | Store-wide list: name (unique, exactly as the client writes it, e.g. `Sage Green`, `Sea green`), slug (unique, made from the name for `?colour=` links; a number is added if it's taken), `swatch_hex` (optional; only needed when a product shows colour swatches), sort, `is_active`. No code |
+| `sizes` | Store-wide list: label (unique, exactly as written, e.g. `M`, `XL`, `Free Size`), sort (display order set by the admin; new sizes go last), `is_active`. No code |
+| `products` | slug (ours, made from the name, unique), name (the client's Product Name), description (the client's Creative Description, as written), **`category_id`** (FK to `categories`, nullable until the client confirms the list), `product_group` (the client's Product Group, nullable, unique), `is_final_sale`, status (draft, published, archived), SEO fields, `published_at`. No price and no style code |
+| `product_colours` | One colourway of one product: `product_id`, `colour_id`, `style_code` (the client's Style, required, exactly as written, not unique, indexed for search), `details` (JSON, see below), sort (the first visible colour is the default), `is_active` (visible on the storefront); unique (product, colour) |
 | `product_images` | Photos of one product colour: `product_colour_id`, `media_key`, alt, sort (first = main photo), width, height. Every size of that colour uses them |
-| `product_variants` | One row per SKU (one colour in one size): `product_id`, `product_colour_id`, `size_id`, `sku` (unique, stored in capitals), `price_override_fils`, `is_active`, `first_sold_at` (the SKU locks once set); unique (product colour, size); composite FK (`product_colour_id`, `product_id`) → `product_colours (id, product_id)`, so a SKU can't point at another product's colour |
-| `stock_levels` | One row per SKU: `variant_id` (PK), `on_hand`, `reserved`, `updated_at`; checks: on hand ≥ 0, reserved ≥ 0, reserved ≤ on hand. No visitor or customer access |
+| `product_variants` | One row per SKU (one colourway in one size, or with no size): `product_id`, `product_colour_id`, `size_id` (nullable), `sku` (the client's, exactly as written; unique ignoring letter case), `price_fils`, `compare_at_fils` (nullable, must be above the price), `is_active`, `first_sold_at` (the SKU locks once set); unique (product colour, size) `nulls not distinct`, so a colourway has at most one SKU without a size, and a trigger stops a colourway mixing SKUs with and without a size; composite FK (`product_colour_id`, `product_id`) -> `product_colours (id, product_id)`, so a SKU can't point at another product's colour |
+| `stock_levels` | One row per SKU: `variant_id` (PK), `on_hand`, `reserved`, `updated_at`; checks: on hand >= 0, reserved >= 0, reserved <= on hand. No visitor or customer access |
 | `stock_reservations` | `order_id`, `variant_id`, qty, status (active, consumed, released), `expires_at` |
-| `inventory_adjustments` | Stock ledger: `variant_id`, delta, reason (opening stock, restock, correction, return restock, offline sale, damaged, sale), note, `order_id` or `return_id`, actor, `created_at` (system sales included) |
-| `orders` | `order_number` (AR-10001), `clerk_user_id` (null for guests), email, name, phone, delivery address, status, `payment_status`, subtotal, discount, delivery, VAT and total, VAT rate, Stripe session and PaymentIntent IDs, `cart_id`, `hold_expires_at`, `paid_at`, `packed_at`, `delivered_at`, `needs_attention`, internal notes |
-| `order_items` | Snapshot: product, product colour and variant IDs, product name, colour name, size label, SKU, image key (the colour's main photo), unit price, qty, discount, VAT, line total, `is_final_sale` |
+| `inventory_adjustments` | Stock ledger: `variant_id`, delta, reason (opening stock, restock, correction, return restock, offline sale, damaged, sale, stock sheet upload, COD refused), note, `order_id`, `return_id` or `import_id`, actor, `created_at` (system sales included) |
+| `catalogue_imports` | Stock sheet uploads: file name (shown as text only), file SHA-256, admin, status (previewed, applied, failed, discarded), the parsed rows (JSON, deleted 24 hours after the preview if not applied), counts (created, updated, unchanged), errors and warnings (JSON), `created_at`, `applied_at` |
+| `orders` | `order_number` (AR-10001), `clerk_user_id` (null for guests), email, name, phone, delivery address (emirate, area, street and building, flat or villa, landmark), status, `payment_method` (card, cod), `payment_status`, subtotal, discount, delivery, COD fee (`cod_fee_fils`), VAT and total, VAT rate, Stripe session and PaymentIntent IDs, `cart_id`, `idempotency_key` (unique), `hold_expires_at`, `confirm_by` (COD deadline), `confirmed_at`, `paid_at`, `packed_at`, `shipped_at`, courier, tracking number, `delivered_at`, `cash_collected_fils`, `cod_payout_id`, `cancelled_at`, cancel reason, `returned_at`, `needs_attention`, internal notes |
+| `order_items` | Snapshot: product, product colour and variant IDs, product name, colour name, style code, size label (empty when the SKU has no size), SKU, image key (the colour's main photo), unit price, qty, discount, VAT, line total, `is_final_sale` |
 | `order_events` | order, type, from and to status, actor, data |
 | `invoices` | order, `invoice_number` (gapless), `issued_at` |
-| `refunds` | order, return, amount, reason, Stripe refund ID, status (pending, succeeded, failed), failure reason, admin |
+| `refunds` | order, return, amount, reason, method (stripe, bank_transfer), Stripe refund ID, or the bank transfer date and reference, status (pending, succeeded, failed), failure reason, admin |
+| `cod_payouts` | Courier cash paid to the client: amount, `paid_on`, reference, note, admin; orders link through `orders.cod_payout_id` |
 | `credit_notes` | refund, `credit_note_number` (gapless), amount, VAT, `issued_at` |
 | `return_requests` | `return_number` (RET-1001), order, customer, status, comment, admin instructions, rejection or close reason, timestamps, `photos_purge_after` |
 | `return_items` | return, order item, qty, reason, condition, refund amount |
-| `return_photos` | return, `media_key` (authenticated), `deleted_at` |
+| `return_photos` | return, `media_key` (private bucket), `deleted_at` |
 | `return_events` | return, type, from and to status, actor, note |
 | `banners` | placement (`hero` or `promo`), eyebrow (small label above the title), title, subtitle, button label and link, desktop and mobile image keys, sort, active, start and end |
 | `blog_posts` | slug, title, excerpt, body (Tiptap JSON), cover image key, status, `published_at`, SEO fields, author |
-| `settings` | One row: store details, TRN, VAT flag and rate, delivery fee and free-delivery threshold, return window, return expiry, low-stock threshold, announcement bar text, notification emails, return instructions template |
+| `settings` | One row: store details, TRN, VAT flag and rate, delivery fee and free-delivery threshold, return window, return expiry, low-stock threshold, announcement bar text, notification emails, return instructions template; COD: on or off, fee, maximum order value, signed-in only, hours to confirm, open COD orders per customer, refused parcels before blocking |
 | `stripe_events` | event ID (PK), type, received and processed timestamps |
 | `email_log` | template, recipient, entity ID, Resend message ID, status; unique (template, entity) for one-time emails |
 | `audit_log` | admin, action, entity, before, after, timestamp |
@@ -234,80 +242,132 @@ Money columns are integer fils (1 AED = 100 fils).
 - Prices, VAT and the final-sale flag are copied onto each order line, so later edits never change past orders, invoices or refunds.
 - Invoice and credit note numbers come from a locked counter row, so they never skip (Postgres sequences can).
 - Categories: one per product via `products.category_id`; the list is admin-managed. If products later need several groupings ("New in", seasonal edits), add `collections` + `product_collections`.
-- **Price of a SKU:** `coalesce(price_override_fils, products.price_fils)`, always worked out on the server.
-- **SKU rules (ADR-025):** stored in capitals and unique regardless of case (unique index on `upper(sku)`), pattern `^[A-Z0-9][A-Z0-9-]{2,31}$`. `src/lib/sku.ts` suggests `{style_code}-{colour code}-{size code}`, e.g. `ST0012-BLK-M`. Editable until `first_sold_at` is set by `mark_order_paid()`, then locked. A SKU with history is deactivated, never deleted, and never reused.
+- **Price of a SKU:** `product_variants.price_fils`, always read on the server. Product cards show the lowest active price, with "From" when the product's SKUs have different prices.
+- **SKU rules (ADR-025):** the client's SKU, exactly as written, never generated, suggested or changed (not even its capitals). Unique ignoring letter case (unique index on `lower(sku)`). `src/lib/sku.ts` only checks: not blank, at most 64 characters, no space at the start or end, no line breaks. Editable until `first_sold_at` is set (card: `mark_order_paid()`; COD: when the order ships), then locked. A SKU with history is deactivated, never deleted, and never reused.
+- **Style codes:** the client's Style, exactly as written, required on every colourway (the upload uses it to keep the sizes of a style together, and the export writes it back). Never generated.
+- **Client data as written (ADR-029):** values from the client's sheet or typed by the admin are stored as they are: no trimming inside, no case changes, no spelling fixes, no merging of similar names. A space at the start or end of a SKU, Style, Size or colour is an error, never trimmed. Only our own values are made by code: IDs, slugs, fils (AED x 100) and the stock ledger.
+- **Details (`product_colours.details`):** one JSON object keyed by the sheet's detail headers exactly (`"Package Contains"`, `"Top Portal Fabric"`, `"Top Primary Color"`, `"Top Pattern Type"`, `"Top Neck Details"`, `"Top Sleeve Details"`, `"Top Category"`, `"BTM Style Type"`, `"BTM Fabric Type"`, `"BTM Primary Color"`, `"DPT Fabric Type"`, `"DPT Primary Color"`, `"DPT Pattern Type"`), values as written text (a number such as `37` is kept as the text `37`). Checked by one Zod schema, `colourwayDetailsSchema` (text only, at most 200 characters each, nothing tidied). Display labels are ours, in `features/catalog/details.ts`; empty and `-` values aren't shown.
 - **Hide, don't delete:** colours, sizes, product colours and SKUs that appear in orders, holds or the stock ledger can only be hidden (`is_active = false`). Unused ones can be deleted.
 
 ## Key Flows
 
-### Product page (colour → size → SKU)
-1. The cached product read returns its visible colours in order. Each colour carries its photos and its active SKUs (size label, SKU, price) in size order.
+### Product page (colour -> size -> SKU)
+1. The cached product read returns its visible colours in order. Each colour carries its style code, details, photos and its active SKUs (size label, SKU, price, compare-at price) in size order.
 2. Availability is read live (never cached) with `variant_availability()` and streamed into the size picker.
-3. The starting colour is `?colour=<slug>` when it's valid, otherwise the first colour with stock, otherwise the first colour. The server renders it, so shared links show the right photos.
+3. The starting colour is `?colour=<slug>` when it's valid, otherwise the first colour with stock, otherwise the first colour. The server renders it, so shared links show the right photos. With only one visible colour there are no swatches; the colour shows in Details.
 4. Choosing a colour swaps the gallery and the size list without a reload and updates `?colour=`. Choosing a size never changes the photos.
-5. Add to cart needs one SKU. A colour with a single size (One Size) selects it automatically.
+5. Add to cart needs one SKU. When the colourway has only one active SKU (one size, or no size), it's selected automatically and no size picker shows.
 6. The canonical URL drops `?colour=`.
 
 ### Shop pages and filters
 The product list comes from the cached catalogue. Live availability for its SKUs is read on each request and merged on the server, so size and colour filters only match SKUs that are in stock, and fully sold-out products go last with a Sold out badge. This stays fast for a few hundred products; revisit past about 1,000.
 
 ### Admin: product with colours and sizes
-1. Save the details → a Draft product with a generated `style_code`.
-2. Add colours from the store's colour list (or create one inline).
-3. Per colour, upload photos: the server signs uploads into `products/{productId}/{productColourId}/`, and on save it checks every key is inside that folder.
-4. Per colour, tick sizes → one SKU each, with a suggested SKU and stock 0.
-5. Enter opening stock in the colours × sizes grid. Every change goes through `adjust_stock()` with a reason.
-6. Publish → the server checks the publishing rules (a price, a visible colour with a photo, an active SKU) → `updateTag()`.
+1. Save the details (name, category, description) -> a Draft product. Nothing is generated.
+2. Add a colourway: a colour from the store's list (or a new one, saved as typed), the client's style code (required) and the details. A sizes-only product has one colourway; "Add another colour" turns on one tab per colour.
+3. Per colourway, upload photos (see "Cloudflare R2 and sharp"): each photo gets a key inside `products/{productId}/{productColourId}/`, and on save the server checks every key is inside that folder.
+4. Per colourway, add SKUs: the client's SKU (required, typed as given; the field is never prefilled), the size (or no size), price and compare-at price (typed once for all sizes, or per SKU), stock 0.
+5. Enter opening stock in the colours x sizes grid. Every change goes through `adjust_stock()` with a reason.
+6. Publish -> the server checks the publishing rules (a visible colourway with a photo, an active SKU, a price on every active SKU) -> `updateTag()`.
 
-### Checkout and stock hold
+### Stock sheet upload (ADR-032)
+The format is the client's own sheet. Columns are found by their exact header names, in any order. Every upload needs SKU, Style and Selling Price; new products need a Product Name and new SKUs need Stock. Everything else is optional.
+
+| Column | Stored in |
+|---|---|
+| SKU | `product_variants.sku` |
+| Style | `product_colours.style_code` |
+| Top Primary Color | The colourway's colour (`colours`, added as written if new) and `details` |
+| Package Contains, the other Top, BTM and DPT columns | `product_colours.details` |
+| Creative Description | `products.description`, from whichever row of the product has it |
+| Selling Price, Compare-at Price | `product_variants.price_fils`, `compare_at_fils` (AED x 100) |
+| Size | `product_variants.size_id` (`sizes`, added as written if new). Empty: no size |
+| Product Name | `products.name` |
+| Stock | `stock_levels.on_hand` |
+| Category | `products.category_id` (`categories`, added as written if new) |
+| Product Group | `products.product_group`. Empty: each Style is its own product |
+| Anything else (like the Check column) | Not stored; the preview lists it as "not used" |
+
+1. **Upload** (admin with `aal2`, rate limited): `.xlsx` or `.csv`, 5 MB at most. `src/services/sheets` reads it on the server in memory (cells as the text Excel shows; formulas are never run). A `catalogue_imports` row is saved as `previewed` with the parsed rows. Nothing else changes.
+2. **Check every row** (`features/catalog/import/validate.ts`, pure and unit tested), then show the preview: what will be created (products, colourways, sizes, colours, categories, SKUs), what will change (old and new value), errors and warnings with row numbers, and the columns not used.
+3. **Grouping:** rows with the same Product Group are one product; when it's empty, rows with the same Style are one product. Inside a product, rows with the same Top Primary Color are one colourway. Rows match existing SKUs ignoring letter case.
+4. **Agreeing rows:** rows of one product must agree on Product Name, Category and Creative Description; rows of one colourway must agree on Style and every detail. An empty cell doesn't count as disagreeing. If two rows disagree, it's an error naming both rows; the code never picks one.
+5. **Empty cells** change nothing on an existing product, so an upload never wipes an admin edit. Clearing a value is done in the admin.
+6. **Errors** (the Apply button stays off): SKU or Style missing; the same SKU on two rows; a space at the start or end of a SKU, Style, Size or colour; a price, compare-at price or stock that isn't a valid number; a price with more than 2 decimals (never rounded); a compare-at price not above the price; rows that disagree; one Style in two Product Groups; a new product without a Product Name; a new SKU without Stock; two SKUs of one colourway with the same size; a colourway mixing SKUs with and without a size; stock below what's held; a sold SKU whose Style, colour or size changed.
+7. **Warnings** (shown, not blocking): a SKU that doesn't start with its Style or doesn't end with its Size; a SKU or Style cell Excel stored as a number; a new colour, size or category; a name that only differs from an existing one in capitals or spaces (`Sea green` and `Sea Green`); SKUs in the store that are missing from the sheet (never deleted or set to zero).
+8. **Apply:** `apply_catalogue_import(import_id)` runs in one transaction. It re-checks every rule against the current data (if anything changed since the preview, it stops and asks for a new preview), creates and updates rows, sets on hand to the sheet's Stock and writes the difference to the ledger (reason "stock sheet upload", with the import ID), marks the import `applied`, writes `audit_log` and calls `updateTag()`. New products land as Draft. Applying the same file again changes nothing.
+9. **Export** (`/api/admin/catalogue-export`): one row per SKU with the same headers, every value exactly as stored, written as text cells (prices and stock as numbers), so Excel never runs anything as a formula and nothing gets an apostrophe added. Export, then upload, changes nothing.
+
+### Checkout page
+`/checkout` (never cached) has one delivery details form for both payment methods (name, UAE mobile, emirate, area, street and building, flat or villa, landmark), prefilled for signed-in customers from their last order, and the payment choice. `getCodEligibility()` decides on the server whether COD is offered and, if not, why (guest, over the limit, an open COD order, blocked, COD off). The browser only shows the result; `place_cod_order()` checks again.
+
+### Card checkout and stock hold
 Per SKU: `available = stock_levels.on_hand - stock_levels.reserved`.
 
-1. `startCheckout` validates the cart and re-prices it from the database. If the same cart already has a pending order, release its hold and expire its Stripe session first.
+1. `startCheckout` validates the delivery details and the cart and re-prices it from the database. If the same cart already has a pending order, release its hold and expire its Stripe session first.
 2. `create_pending_order()` runs in one transaction:
    - For each line, sorted by variant ID (avoids deadlocks): check the SKU is active, its colour is visible and the product is published, then `UPDATE stock_levels SET reserved = reserved + qty WHERE variant_id = $1 AND on_hand - reserved >= qty`. If any line updates zero rows, roll back and report that line.
-   - Insert the order (`pending_payment`, provisional `hold_expires_at`), the `order_items` snapshot (with colour, size and SKU) and the `stock_reservations`.
-3. Create the Stripe Checkout Session: `ui_mode: 'hosted_page'` (API versions from 2026-03; older versions call it `hosted`), currency `aed`, line items from the snapshot (named like "Satin Slip Dress, Black / M", with the SKU and variant ID in metadata), `expires_at` = now + 31 min (Stripe needs at least 30 min after creation), shipping address limited to `AE`, phone required, email prefilled for signed-in customers, delivery fee as a shipping option, `metadata.order_id`, idempotency key = order ID. Copy Stripe's `expires_at` into `hold_expires_at`, save the session ID and redirect. If Stripe fails, release the hold.
-4. `checkout.session.completed` with `payment_status = 'paid'` → verify signature → skip if the event ID is already stored → `mark_order_paid()`: order Paid, reservations consumed, `on_hand` and `reserved` both reduced, `first_sold_at` set on each SKU, ledger rows written, invoice number assigned, Stripe IDs, amounts, customer details and address saved → send emails, each guarded by a unique `email_log` row.
-5. `checkout.session.expired`, or the customer uses Stripe's back link (the cancel page expires the session) → `release_order()`: reservations released, order Expired.
+   - Insert the order (`pending_payment`, `payment_method = 'card'`, the delivery details, provisional `hold_expires_at`), the `order_items` snapshot (with colour, style code, size and SKU) and the `stock_reservations`.
+3. Create the Stripe Checkout Session: `ui_mode: 'hosted_page'` (API versions from 2026-03; older versions call it `hosted`), currency `aed`, line items from the snapshot (named like "Satin Slip Dress, Black / M", with the SKU and variant ID in metadata), `expires_at` = now + 31 min (Stripe needs at least 30 min after creation), no address collection (the address is already on the order from our form), email prefilled, the delivery fee as its own line item, `metadata.order_id`, idempotency key = order ID. Copy Stripe's `expires_at` into `hold_expires_at`, save the session ID and redirect. If Stripe fails, release the hold.
+4. `checkout.session.completed` with `payment_status = 'paid'` -> verify signature -> skip if the event ID is already stored -> `mark_order_paid()`: order Confirmed, payment Paid, reservations consumed, `on_hand` and `reserved` both reduced, `first_sold_at` set on each SKU, ledger rows written, invoice number assigned, Stripe IDs and amounts saved -> send emails, each guarded by a unique `email_log` row.
+5. `checkout.session.expired`, or the customer uses Stripe's back link (the cancel page expires the session) -> `release_order()`: reservations released, order Expired.
 6. Every 15 min the reconciliation job checks pending orders more than 10 min past their hold (including ones that never got a session) against Stripe and fixes them.
-7. Paid but the hold was already released → deduct again if possible; if stock is short, set `needs_attention` and alert the admin.
+7. Paid but the hold was already released -> deduct again if possible; if stock is short, set `needs_attention` and alert the admin.
+
+### Cash on delivery (ADR-033)
+1. The shopper picks Cash on delivery and clicks Place order. `placeCodOrder` (signed-in customers only) validates the delivery details and calls `place_cod_order(cart, idempotency_key)`.
+2. `place_cod_order()` runs in one transaction: checks the COD settings and the customer's eligibility (COD on, signed in, total within the maximum, no other open COD order, fewer refused parcels than the limit by account and by phone, `cod_disabled` off), re-prices the cart and adds the COD fee, reserves stock exactly like card checkout (same row order) with `expires_at` = `confirm_by` = now + the hours to confirm, and inserts the order (`awaiting_confirmation`, payment `unpaid`, `payment_method = 'cod'`). The idempotency key (one per cart) is unique, so a double click returns the same order.
+3. The shopper sees the COD received page ("We'll call or WhatsApp you on +971 ... to confirm your order"). The customer gets the COD order received email; the admin gets the COD order to confirm email.
+4. The admin calls or messages the customer, then `confirm_cod_order()` (status `confirmed`, `confirmed_at`, the reservations no longer expire) or `cancel_order(reason)` (status `cancelled`, payment `voided`, reservations released, cancellation email).
+5. The reconciliation job cancels COD orders past `confirm_by` the same way.
+6. Packed, then `mark_shipped(courier, tracking)` for every order. For COD this is when stock leaves: reservations consumed, `on_hand` and `reserved` both reduced, ledger rows (reason sale), `first_sold_at` set. The Shipped email shows the amount to have ready.
+7. Delivered: `record_cod_delivery(cash_collected)` sets `delivered`, payment `paid`, `paid_at`, `cash_collected_fils`, assigns the invoice number and sends the invoice email. The return window starts.
+8. Refused or undeliverable: when the parcel is back, `mark_returned_to_sender(reason)` sets `returned_to_sender` and payment `voided`. It counts towards the refusal limit. Stock never goes back by itself; the admin restocks with reason "COD refused" (ADR-012).
+9. Courier cash: the COD report lists cash collected and not yet paid out. The admin records each courier payout (`cod_payouts`) and ticks the orders it covers.
 
 ### Refund
 1. The admin clicks Refund on a Received return. The server checks `aal2`, the return status and the refundable balance.
+   - **COD orders** have no card to refund: the admin pays by bank transfer and records the amount, date and reference (`refunds.method = 'bank_transfer'`, status `succeeded` straight away), then the steps from 3 on run the same way. Bank details are never stored.
 2. Insert a `refunds` row (pending), then create the Stripe refund on the order's PaymentIntent with idempotency key = refund ID.
-3. `refund.created` or `refund.updated` with status `succeeded` → refund Succeeded → return Refunded → order payment status updated → credit note (if VAT is on) → refund email.
-4. `refund.failed` → refund Failed → admin alert; the return stays Received.
+3. `refund.created` or `refund.updated` with status `succeeded` -> refund Succeeded -> return Refunded -> order payment status updated -> credit note (if VAT is on) -> refund email.
+4. `refund.failed` -> refund Failed -> admin alert; the return stays Received.
 5. Stripe keeps its processing fee; refunds take 5 to 10 business days to reach the customer.
 
 ### Return photo upload
 1. The return form creates a draft ID in the browser.
-2. A Server Action signs Cloudinary upload params only if the customer owns the order and it's eligible: `type: 'authenticated'`, `folder: returns/{orderId}/{draftId}`, allowed formats, timestamp.
-3. The browser compresses each photo and uploads it straight to Cloudinary (never through Vercel, which caps request bodies at 4.5 MB).
-4. On submit, the server checks every photo key is inside that folder, then `submit_return()` creates the return.
-5. Admins see photos through `private_download_url` links that expire after 1 hour.
+2. A Server Action signs an upload link (5 minutes, one key, content type fixed) into the **private** bucket at `returns/{orderId}/{draftId}/{id}.jpg`, only if the customer owns the order and it's eligible.
+3. The browser compresses each photo and uploads it straight to R2 (never through Vercel, which caps request bodies at 4.5 MB).
+4. On submit, the server checks every key is inside that folder, checks each file's size and type (deleting bad ones), re-saves each photo with sharp so the GPS location and other metadata are removed, then `submit_return()` creates the return. Return photos are not resized.
+5. Admins see photos through signed links that expire after 1 hour.
 6. A daily job deletes photos 90 days after the return closes.
 
 ### Catalogue change
-Admin saves → Server Action → service → `updateTag('products')` (plus `product:{slug}`, `categories`, `colours`, `sizes`, and so on) → the storefront shows the change on the next load. Stock changes need no cache update because availability is never cached.
+Admin saves -> Server Action -> service -> `updateTag('products')` (plus `product:{slug}`, `categories`, `colours`, `sizes`, and so on) -> the storefront shows the change on the next load. Stock changes need no cache update because availability is never cached.
 
 ### Guest order linking
-Clerk `user.created` / `user.updated` webhook (and the first account page load) → attach orders where `clerk_user_id` is null and the email matches a **verified** Clerk email.
+Clerk `user.created` / `user.updated` webhook (and the first account page load) -> attach orders where `clerk_user_id` is null and the email matches a **verified** Clerk email.
 
 ## Statuses
 
 ### Order
 | Status | Meaning | Set by | Next |
 |---|---|---|---|
-| `pending_payment` | Stock held, waiting for Stripe | Checkout | `paid`, `expired` |
-| `paid` | Payment confirmed | Stripe webhook | `packed` |
-| `packed` | Packed, ready to go | Admin | `delivered` |
-| `delivered` | Delivered; return window running | Admin | final |
-| `expired` | Checkout abandoned, hold released | Stripe webhook or job | final |
+One order track for both payment methods. `paid` was renamed `confirmed` (ADR-035), because a confirmed COD order isn't paid yet; payment has its own status.
 
-After launch: `cancelled` (admin cancels before delivery with a full refund) and `shipped`.
+| Status | Card | COD | Set by | Next |
+|---|---|---|---|---|
+| `pending_payment` | Stock held, waiting for Stripe | | Checkout | `confirmed`, `expired` |
+| `awaiting_confirmation` | | Stock held, waiting for the call | `place_cod_order()` | `confirmed`, `cancelled` |
+| `confirmed` | Paid by card | Confirmed by phone or WhatsApp | Stripe webhook or admin | `packed`, `cancelled` (COD only) |
+| `packed` | Packed | Packed | Admin | `shipped`, `cancelled` (COD only) |
+| `shipped` | With the courier | With the courier, cash due; stock deducted | Admin | `delivered`, `returned_to_sender` (COD only) |
+| `delivered` | Delivered; return window running | Delivered, cash collected; return window running | Admin | final |
+| `returned_to_sender` | | Refused or undeliverable, parcel back | Admin | final |
+| `expired` | Checkout abandoned, hold released | | Stripe webhook or job | final |
+| `cancelled` | After launch | Cancelled before shipping, hold released | Admin or job | final |
 
 ### Payment
-`unpaid` → `paid` → `partially_refunded` → `refunded`. `needs_attention` is a flag, not a status.
+`unpaid` -> `paid` -> `partially_refunded` -> `refunded`, plus `voided` for COD orders that are cancelled or returned to sender. `needs_attention` is a flag, not a status.
 
 ### Return
 | Status | Meaning | Next |
@@ -322,7 +382,7 @@ After launch: `cancelled` (admin cancels before delivery with a full refund) and
 | `expired` | Approved but never received | final |
 
 ### Refund
-`pending` → `succeeded` or `failed`.
+`pending` -> `succeeded` or `failed`.
 
 ## Integrations
 
@@ -331,7 +391,7 @@ Raw body + signature check; event IDs stored in `stripe_events`; API version pin
 
 | Event | Action |
 |---|---|
-| `checkout.session.completed` | Mark paid, deduct stock, send emails |
+| `checkout.session.completed` | Mark confirmed and paid, deduct stock, send emails |
 | `checkout.session.expired` | Release the hold, set the order to Expired |
 | `refund.created`, `refund.updated` | Update refund status; on success finish the return, issue the credit note, email the customer |
 | `refund.failed` | Mark failed, alert the admin |
@@ -340,16 +400,47 @@ Raw body + signature check; event IDs stored in `stripe_events`; API version pin
 ### Clerk (`/api/webhooks/clerk`)
 Verified with `verifyWebhook()`. `user.created` and `user.updated` upsert `customers` and link guest orders. `user.deleted` anonymises the profile and keeps orders.
 
-### Cloudinary
-| Folder | Type | Uploaded by | Delivery |
-|---|---|---|---|
-| `products/{productId}/{productColourId}/` | upload (public) | Admin | CDN, resized through the loader |
-| `categories/` | upload (public) | Admin | CDN |
-| `banners/` | upload (public) | Admin | CDN |
-| `blog/` | upload (public) | Admin | CDN |
-| `returns/` | authenticated (private) | Customer | `private_download_url`, 1 hour |
+### Cloudflare R2 and sharp (ADR-037)
+**Buckets:** two per environment. The public one is reached only through our media address; the private one is never public.
 
-All uploads are signed by the server. Media adapter API: `imageUrl(key, options)`, `signUpload(kind, context)`, `privateUrl(key, ttl)`, `remove(key)`. The replacement provider must support resized public delivery, private files, signed uploads and signed time-limited links (e.g. R2 or S3 presigned URLs).
+| Bucket | Holds | Reached through |
+|---|---|---|
+| `ar-<env>-media` (public) | The resized WebP copies of product, category, banner and blog photos | `media.<client-domain>` in production (Cloudflare cache in front); the `r2.dev` address in dev and staging only |
+| `ar-<env>-private` | Originals of those photos (`originals/...`), return photos (`returns/...`) | Signed links from our server only |
+
+**Keys:** every upload gets a new random ID, so a file never changes after it's written. The database stores the key only (`product_images.media_key = products/101/201/a1b2c3`), never a URL.
+
+```text
+ar-prod-private/originals/products/101/201/a1b2c3.jpg   original (kept to remake sizes)
+ar-prod-media/products/101/201/a1b2c3/w400.webp         copies made by sharp
+ar-prod-media/products/101/201/a1b2c3/w800.webp
+ar-prod-media/products/101/201/a1b2c3/w1200.webp
+ar-prod-media/products/101/201/a1b2c3/w1600.webp
+```
+
+| Kind | Key prefix | Widths (WebP) | Uploaded by |
+|---|---|---|---|
+| Product photos | `products/{productId}/{productColourId}/` | 400, 800, 1200, 1600 | Admin |
+| Category photos | `categories/{categoryId}/` | 200, 400, 600 | Admin |
+| Banners (desktop and mobile) | `banners/{bannerId}/` | 800, 1200, 1600, 2400 | Admin |
+| Blog images | `blog/{postId}/` | 400, 800, 1200, 1600 | Admin |
+| Return photos | `returns/{orderId}/{draftId}/` (private) | Not resized | Customer |
+
+**Upload (admin photos):**
+1. The browser compresses the photo (about 2 MB, JPEG) and calls `signUpload(kind, context)`. The server checks `aal2`, makes the key with a new ID and returns a signed PUT link to `originals/{key}.jpg` in the private bucket (5 minutes, content type fixed).
+2. The browser uploads the original straight to R2.
+3. The browser calls `finishUpload(key)`. The server checks the file (at most 10 MB, JPEG, PNG or WebP; R2 links can't limit size, so this check is required), reads it, and sharp makes one WebP copy per width: `.rotate()` (upright phone photos), `.resize({ width, withoutEnlargement: true })`, `.webp({ quality: 78 })`, which also drops GPS and other metadata. Each copy is saved to the public bucket as `{key}/w{width}.webp` with `Content-Type: image/webp` and `Cache-Control: public, max-age=31536000, immutable`.
+4. The server saves the key with the photo's width and height. If any step fails, it deletes what was written and returns an error. One photo per call, so each call stays short (about a second).
+
+**Delivery:** `next.config` uses our loader (`images.loader: 'custom'`, `loaderFile: './src/lib/media-loader.ts'`). The loader reads the kind from the key prefix and returns `NEXT_PUBLIC_MEDIA_URL/{key}/w{width}.webp` with the smallest stored width at least as wide as requested (or the largest). Files in `public/` (logo, icons) use `next/image` with `unoptimized`. Vercel's image optimizer isn't used.
+
+**Replace and delete:** a replacement is a new upload with a new ID. `remove(key)` deletes the original and every copy. The purge job deletes return photos 90 days after the return closes. No lifecycle rules on any bucket: files stay until our code deletes them.
+
+**New sizes later:** `npm run media:regenerate` remakes the copies from the originals; nothing is uploaded again.
+
+**Media adapter API:** `signUpload(kind, context)`, `finishUpload(key)`, `imageUrl(key, width)`, `privateUrl(key, ttl)`, `remove(key)`. Only `src/services/media` talks to R2 (`@aws-sdk/client-s3` with `endpoint: https://<account_id>.r2.cloudflarestorage.com`, `region: 'auto'`, and `@aws-sdk/s3-request-presigner` for signed links).
+
+**Setup per environment:** the two buckets; a CORS rule allowing `PUT` from that environment's site only; one API token ("Object Read & Write", only that environment's buckets). Environment variables: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_BUCKET`, `R2_PRIVATE_BUCKET`, `NEXT_PUBLIC_MEDIA_URL`. Production also connects `media.<client-domain>` to the public bucket (the domain must use Cloudflare DNS; Vercel's records stay "DNS only") and turns its `r2.dev` address off.
 
 ### Resend
 React Email templates live in `src/services/email/templates`. The sender uses the client's domain with SPF, DKIM and DMARC. Every one-time email writes a unique `email_log` row first. The Free plan caps at 100 emails a day; switch to Pro ($20/mo) before any promotion.
@@ -377,20 +468,20 @@ Vercel Cron, protected by `CRON_SECRET`. Every run writes a `job_runs` row.
 
 | Job | Route | Runs | Does | Watched by |
 |---|---|---|---|---|
-| Reconcile checkouts | `/api/cron/reconcile-checkouts` | Every 15 min | Checks stale pending orders against Stripe and fixes them | Sentry cron monitor |
+| Reconcile checkouts | `/api/cron/reconcile-checkouts` | Every 15 min | Checks stale pending orders against Stripe and fixes them; cancels COD orders past `confirm_by` and releases their stock; deletes stock sheet previews not applied within 24 hours | Sentry cron monitor |
 | Expire returns | `/api/cron/expire-returns` | Daily | Approved returns not received in N days become Expired | The reconciliation job reports an error to Sentry if there's no successful run in 26 hours |
 | Purge return photos | `/api/cron/purge-return-photos` | Daily | Deletes photos 90 days after the return closes | Same |
 
 ## Caching
 - Enable `cacheComponents`. Catalogue, banner and blog reads use `'use cache'` + `cacheTag` (`categories`, `colours`, `sizes`, `products`, `product:{slug}`, `banners`, `blog`, `post:{slug}`) through `createPublicClient()`.
 - Admin Server Actions call `updateTag()`. Webhooks and jobs use `revalidateTag(tag, { expire: 0 })`.
-- Never cached: availability (`variant_availability()`), cart, checkout, account and admin pages.
-- Images use a custom `next/image` loader for Cloudinary; `images.remotePatterns` is limited to our Cloudinary account.
+- Never cached: availability (`variant_availability()`), cart, checkout (including COD eligibility), account and admin pages.
+- Images use our `next/image` loader (`src/lib/media-loader.ts`), which points at the stored WebP copies on `media.<client-domain>`. Copies are cached for a year by browsers and Cloudflare; new uploads get new keys, so nothing goes stale.
 
 ## Routes
-- **Storefront:** `/`, `/shop` (filters as query params: `?size=`, `?colour=`, `?sort=`, `?sale=1`), `/shop/[category]`, `/products/[slug]` (`?colour=<slug>` opens a colour), `/cart`, `/checkout/success`, `/checkout/cancelled`, `/sign-in`, `/sign-up`, `/account/orders`, `/account/orders/[orderNumber]`, `/account/orders/[orderNumber]/return`, `/account/returns/[returnNumber]`, `/blog`, `/blog/[slug]`, `/about`, `/contact`, `/policies/[slug]`
-- **Admin:** `/admin/login`, `/admin/mfa`, `/admin`, `/admin/categories`, `/admin/colours`, `/admin/sizes`, `/admin/products`, `/admin/products/[id]`, `/admin/stock`, `/admin/orders`, `/admin/orders/[id]`, `/admin/returns`, `/admin/returns/[id]`, `/admin/banners`, `/admin/blog`, `/admin/blog/[id]`, `/admin/settings`, `/admin/staff`, `/admin/audit`
-- **API:** `/api/webhooks/stripe`, `/api/webhooks/clerk`, `/api/invoices/[orderId]`, `/api/credit-notes/[id]`, `/api/cron/reconcile-checkouts`, `/api/cron/expire-returns`, `/api/cron/purge-return-photos`, `/api/health`, `/sentry-tunnel` (added by the Sentry SDK)
+- **Storefront:** `/`, `/shop` (filters as query params: `?size=`, `?colour=`, `?sort=`, `?sale=1`), `/shop/[category]`, `/products/[slug]` (`?colour=<slug>` opens a colour), `/cart`, `/checkout` (delivery details and payment choice), `/checkout/success`, `/checkout/cancelled`, `/checkout/received/[orderNumber]` (COD, signed in), `/sign-in`, `/sign-up`, `/account/orders`, `/account/orders/[orderNumber]`, `/account/orders/[orderNumber]/return`, `/account/returns/[returnNumber]`, `/blog`, `/blog/[slug]`, `/about`, `/contact`, `/policies/[slug]`
+- **Admin:** `/admin/login`, `/admin/mfa`, `/admin`, `/admin/categories`, `/admin/colours`, `/admin/sizes`, `/admin/products`, `/admin/products/[id]`, `/admin/products/upload` (stock sheet upload, preview and history), `/admin/stock`, `/admin/orders`, `/admin/orders/[id]`, `/admin/returns`, `/admin/returns/[id]`, `/admin/reports/cod`, `/admin/banners`, `/admin/blog`, `/admin/blog/[id]`, `/admin/settings`, `/admin/staff`, `/admin/audit`
+- **API:** `/api/admin/catalogue-export`, `/api/webhooks/stripe`, `/api/webhooks/clerk`, `/api/invoices/[orderId]`, `/api/credit-notes/[id]`, `/api/cron/reconcile-checkouts`, `/api/cron/expire-returns`, `/api/cron/purge-return-photos`, `/api/health`, `/sentry-tunnel` (added by the Sentry SDK)
 
 ## Environments
 | Service | Local | Preview / Staging | Production |
@@ -400,7 +491,7 @@ Vercel Cron, protected by `CRON_SECRET`. Every run writes a `job_runs` row.
 | Clerk | Development instance | Development instance | Production instance on the client's domain |
 | Stripe | Test mode + Stripe CLI | Test mode | Live mode |
 | Resend | Test API key | Test API key | Live key, verified domain |
-| Cloudinary | `dev/` folders | `staging/` folders | Production folders |
+| Cloudflare R2 | `ar-dev-media`, `ar-dev-private` (`r2.dev` address) | `ar-staging-media`, `ar-staging-private` (`r2.dev` address) | `ar-prod-media` on `media.<client-domain>`, `ar-prod-private` |
 | Sentry | Off (no DSN) unless testing Sentry itself | One project, environment `preview` | Same project, environment `production` |
 
 ## External Services and Costs
@@ -410,7 +501,7 @@ Vercel Cron, protected by `CRON_SECRET`. Every run writes a `job_runs` row.
 | Supabase | Pro | $25 + usage | Daily backups |
 | Clerk | Hobby | $0 up to 50k monthly retained users | Pro ($25/mo) removes Clerk branding |
 | Resend | Free, then Pro | $0, then $20 | Free is capped at 100 emails a day |
-| Cloudinary | Free to start | $0 | Temporary; usage-based beyond the free allowance |
+| Cloudflare R2 | Free tier | $0 | 10 GB storage, 1M writes and 10M reads a month free; then $0.015 per GB-month. No egress fees. DNS on Cloudflare's free plan |
 | PostHog | Free tier | $0 | |
 | Sentry | Developer (free) | $0 | One user, email alerts only; limits under "Sentry" above. Team ($26/mo billed annually) adds people, Slack and higher limits |
 | Stripe | Pay as you go | 2.9% + AED 1 per domestic card | Paid by the client; the fee isn't returned on refunds |

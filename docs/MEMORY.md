@@ -3,31 +3,36 @@
 > The project's current state. Update it after every task. Permanent decisions go in `DECISIONS.md`.
 
 ## Current Status
-Phase 1 Setup and parts of Phase 11 (Home Page) are underway. Next.js scaffolded, folder structure created, and shadcn/ui installed. Design tokens, icons (Lucide), and fonts configured to match the new Sylvie mockup (Newsreader, Inter, Plum/Cream theme). The storefront layout and home page components have been built and styled.
+Phase 1 Setup and parts of Phase 11 (Home Page) are underway. Next.js scaffolded, folder structure created, and shadcn/ui installed. Design tokens, icons (Lucide), and fonts configured to match the new Sylvie mockup (Newsreader, Inter, Plum/Cream theme). The storefront layout and home page components have been built and styled. On 9 Oct 2026 the docs were updated for the client's stock sheet (their SKUs and style codes used exactly as written), the stock sheet upload and cash on delivery.
 
 ## Completed
 - Research: stack, payments, auth, media, UAE compliance
 - Requirements interview with the tech lead
 - Project docs: PRD, ARCHITECTURE, DESIGN, RULES, TASKS, DECISIONS, TEST_PLAN, SECURITY, README, `.env.example`, Cursor rules
-- Docs update: colours → sizes → SKU model, photos per colour, private stock counts, Sentry instead of Better Stack, design tokens and fonts from the client's reference (ADR-023 to ADR-028)
+- Docs update: colours -> sizes -> SKU model, photos per colour, private stock counts, Sentry instead of Better Stack, design tokens and fonts from the client's reference (ADR-023 to ADR-028)
 - Scaffold Next.js project (TASK-001)
 - Strict TypeScript, Prettier, path alias (TASK-002)
 - Folder structure setup (TASK-003)
 - shadcn/ui init with Lyra style and design tokens (TASK-004)
 - Home page components and layout according to the new Sylvie design system (TASK-091)
 - Storefront layout including header, footer, 404 page, metadata, and placeholder pages (TASK-039)
+- Docs update (9 Oct 2026): the client's stock sheet is the source (ADR-029), style code and details per colourway, price per SKU, four product shapes, stock sheet upload and export, cash on delivery, own checkout page, new order statuses (ADR-023 and ADR-025 amended, ADR-029 to ADR-036); tasks TASK-113 to TASK-125 added; `AGENTS.md` split into `.agents/rules/`
 
 ## Current Task
 TASK-005 src/lib/env.ts: validate every environment variable with Zod
 
 ## Waiting On
-- Client answers to Q1 to Q25 in `PRD.md`. Most urgent: Q1 guest checkout, Q2 return window, Q6 delivery fee, Q11 categories, Q15 VAT, Q23 existing SKUs, Q24 sizes and colours
+- Client answers to Q1 to Q41 in `PRD.md`. Most urgent: Q1 guest checkout, Q2 return window, Q6 delivery fee, Q15 VAT, Q26 to Q28 (stock, product names, rows 38 to 43), Q35 to Q38 (courier and COD), Q41 categories
+- The completed stock sheet back from the client (Size, Product Name, Stock and Category filled; rows 38 to 43 fixed)
 - Product photos per colour (4:5 portrait)
-- Commercial sign-off for customer accounts, returns and bilingual invoices (beyond the original proposal)
+- The client's Cloudflare account, and their domain on Cloudflare DNS before launch (for `media.<client-domain>`, ADR-037)
+- Commercial sign-off for customer accounts, returns, bilingual invoices, the stock sheet upload and cash on delivery (beyond the original proposal)
 
 ## Known Issues
 - Next.js: another critical security fix is pending upstream. Upgrade as soon as it ships.
 - Arabic PDF engine not chosen yet (TASK-062, ADR-022).
+- ExcelJS for the stock sheet is proposed (ADR-036): confirm before TASK-113.
+- Rows 38 to 43 of the client's sheet (J0395, JNE4124, J0478) have SKU and Style swapped and values in the wrong columns. The upload rejects them until the client fixes their sheet; we never fix it for them.
 - Resend Free caps at 100 emails a day. Switch to Pro before any promotion.
 - Sentry free plan: one user, email alerts only, one cron monitor and one uptime monitor, 5,000 errors a month. Upgrade to Team when a second person needs access or a limit is hit.
 
@@ -47,3 +52,5 @@ Implement Zod environment variable validation (TASK-005).
 - 7 Oct 2026: Regenerated mobile hero banners to strict 9:16 aspect ratio (937x1679), cleaned up unused images from public directory, and fixed Embla Carousel autoplay pausing on mobile touch interactions.
 - 9 Oct 2026: Refined mobile layout based on client feedback: regenerated all three mobile hero banners at a 3:4 aspect ratio with embedded text, updated HeroSlider to use Next.js Image `fill` with strict CSS aspect ratio constraints to perfectly frame the banners without cropping; fixed New Arrivals mobile layout to properly display two cards (`basis-[45%]`).
 - 9 Oct 2026: Implemented transparent scrolling header overlaying the hero section. Updated desktop hero banners to a wider 16:9 format, increased HeroSlider desktop aspect ratio to `2.13/1`. Integrated specific local client images for the top 3 slides on both desktop and mobile, and swapped the order of slides 1 and 3. Increased mobile hero banner height to `aspect-[2/3]`. Added dynamic mobile aspect ratio fallback for slides missing mobile images.
+- 9 Oct 2026: docs updated for the client's stock sheet (their SKUs, style codes and values used exactly as written, never generated), price per SKU, details per colourway, stock sheet upload and export, cash on delivery (ADR-006 replaced by ADR-033), own checkout page, `paid` renamed `confirmed`; TASK-113 to TASK-125 added; `AGENTS.md` split into `.agents/rules/`
+- 10 Oct 2026: media moved from Cloudinary to Cloudflare R2 with sharp resizing at upload (ADR-037 replaces ADR-010 and ADR-011; PRD Q19 answered); ARCHITECTURE, SECURITY, DESIGN, RULES, agent rules, TASKS (029, 075, 090, 109) and TEST_PLAN updated

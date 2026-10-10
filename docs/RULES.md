@@ -1,6 +1,6 @@
 # Development Rules
 
-> The AI rulebook for this project. Cursor gets the same rules split by area in `.cursor/rules/`. When a rule changes, update both.
+> The AI rulebook for this project. Antigravity reads `AGENTS.md` and `.agents/rules/*.md`, which hold the same rules split by area. When a rule changes, update both.
 
 ## General
 - Use TypeScript in strict mode. No `any` without a comment explaining why.
@@ -22,9 +22,9 @@
 - Confirm the task's acceptance criteria and the tests you'll add.
 
 ## Architecture
-- UI components never call Supabase, Stripe, Resend or Cloudinary directly.
+- UI components never call Supabase, Stripe, Resend or R2 directly.
 - Database and third-party calls live in `src/services/*` (server only).
-- Every Server Action and Route Handler: check auth → validate input with Zod → call a service → return a typed result.
+- Every Server Action and Route Handler: check auth -> validate input with Zod -> call a service -> return a typed result.
 - Orders, stock, returns and refunds change only through Postgres functions.
 - Server Components by default. Add `"use client"` only when needed.
 - Keep business logic out of components.
@@ -38,11 +38,15 @@
 - Regenerate database types after schema changes (`npm run db:types`).
 
 ## Catalogue, Payments and Stock
-- A product has colours; each colour has sizes; each colour + size is one SKU (`product_variants` row). Cart lines, holds, order lines, returns and stock changes always reference the SKU.
+- A product has colourways; each colourway has SKUs, usually one per size (`product_variants` rows). Cart lines, holds, order lines, returns and stock changes always reference the SKU.
+- The client's data is used exactly as written (ADR-029). Never generate, suggest, tidy or fix SKUs, style codes, names, details, descriptions or prices. If something looks wrong, return an error or a warning with the row; never change the value.
+- Price and compare-at price live on the SKU. Style code and details live on the colourway.
 - Photos belong to a product colour. Never attach photos to a size or directly to a product.
-- SKUs: capitals, unique regardless of case, suggested by `src/lib/sku.ts`, locked once sold. Deactivate SKUs with history; never delete or reuse them.
+- SKUs: the client's, exactly as written (no capitals forced), unique ignoring letter case, checked (never generated) by `src/lib/sku.ts`, locked once sold. Deactivate SKUs with history; never delete or reuse them.
+- Stock sheet upload: the preview never writes; `apply_catalogue_import()` applies all rows or none; an empty cell changes nothing; SKUs missing from the sheet are never deleted or zeroed.
 - Never send stock counts to the browser. Use `variant_availability()` statuses.
-- Never mark an order paid outside the Stripe webhook.
+- Never mark a card order paid outside the Stripe webhook. A COD order is paid only through the admin's cash-collected action.
+- COD orders are placed only through `place_cod_order()`, which re-checks eligibility, prices, fee and stock. COD stock is deducted at Shipped.
 - Never trust prices, totals or stock from the browser.
 - Money is integer fils. Format it only in the UI with `formatAED()`.
 - Use idempotency keys for Stripe writes. Webhooks must be safe to replay.
@@ -51,7 +55,9 @@
 ## Media
 - Use `src/services/media` only. Store keys, never URLs.
 - Product photos are uploaded into the colour's folder (`products/{productId}/{productColourId}/`).
-- Return photos are `authenticated` uploads, shown only through short-lived signed links.
+- Admin photos: the original goes to the private bucket; sharp makes the WebP copies into the public bucket, once, at upload. Every upload gets a new key.
+- Return photos stay in the private bucket and are shown only through 1-hour signed links.
+- Check every upload's size and type on the server after it lands in R2.
 
 ## UI
 - Follow `DESIGN.md`. Use shadcn/ui primitives from `src/components/ui`.
@@ -60,7 +66,7 @@
 - Keep every screen responsive (375 / 768 / 1440).
 - Include loading, error and empty states.
 - Make it accessible: labels, keyboard support, visible focus, alt text.
-- Use `next/image` with the Cloudinary loader.
+- Use `next/image` with our media loader (`src/lib/media-loader.ts`). Files in `public/` use `unoptimized`.
 
 ## Errors and Monitoring
 - Return expected errors (validation, sold out, not allowed) to the UI as typed results. Don't report them to Sentry.
@@ -81,8 +87,7 @@
 - Every bug fix gets a test that would have caught it.
 
 ## Git
-- One branch per task: `feature/TASK-0xx-short-name` or `fix/short-name`.
-- Make small commits with descriptive messages: `feat:`, `fix:`, `test:`, `docs:`, `chore:`.
+- Branch names, commit messages and pull requests follow `.agents/rules/git.md`. Never run git commands unless asked in that message.
 - Never commit `.env*` files except `.env.example`.
 
 ## After Each Task

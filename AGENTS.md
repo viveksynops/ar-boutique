@@ -10,6 +10,15 @@ Rules for AI coding agents working on AR Boutique. The full rulebook is `docs/RU
 - Tests: `docs/TEST_PLAN.md`
 - Security: `docs/SECURITY.md`
 
+## Rules by area
+Each file in `.agents/rules/` is always on. Read the ones for the files you touch.
+- `.agents/rules/frontend.md`: pages, components, shadcn, product page, checkout UI
+- `.agents/rules/backend.md`: services, actions, auth, database, payments, cash on delivery, media, email, errors
+- `.agents/rules/catalogue.md`: products, colourways, SKUs, stock, the client's data, stock sheet upload
+- `.agents/rules/testing.md`: what to test and how
+- `.agents/rules/git.md`: branch names, commit messages, pull requests
+- New rules go in a new file in `.agents/rules/` (frontmatter `trigger: always_on`), not here. Keep every file under 12,000 characters.
+
 ## Commands
 - `npm run dev`: start the dev server
 - `npm run typecheck`, `npm run lint`, `npm run check:tokens`: static checks
@@ -24,126 +33,12 @@ Rules for AI coding agents working on AR Boutique. The full rulebook is `docs/RU
 - Work on one task from `TASKS.md` at a time. For large changes, write a plan and wait for approval.
 - TypeScript strict. Reuse existing components, services and helpers. Don't duplicate logic.
 - Keep functions small. Don't modify unrelated files.
-- Don't add dependencies without asking (approved libraries: ADR-021, plus `@sentry/nextjs` from ADR-027).
+- Don't add dependencies without asking (approved libraries: ADR-021, plus `@sentry/nextjs` from ADR-027; `exceljs` is proposed in ADR-036; `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner` and `sharp` from ADR-037).
 - If the docs don't answer something, stop and ask. Never invent requirements.
 - Never expose secrets. Only `NEXT_PUBLIC_*` values may reach the browser.
 - Spell it `colour` in names and copy; `color` only where CSS or a library requires it.
-
-## Frontend
-Applies to `src/app/**/*.tsx`, `src/components/**/*.tsx` and `src/features/**/components/**/*.tsx`.
-- Follow `docs/DESIGN.md`: theme tokens only (`bg-primary`, `text-muted-foreground`, `border-input`, `font-heading` and the rest listed there). No hex codes, arbitrary colour values, font names or invented radii (`npm run check:tokens` fails on them).
-- shadcn/ui first, reusable always: see Components below.
-- Server Components by default. Add `"use client"` only for interaction.
-- Components never call Supabase, Stripe, Resend or Cloudinary. Call Server Actions from `features/<domain>/actions.ts`.
-- Forms use React Hook Form with the Zod schema from `features/<domain>/schemas.ts`.
-- Product page: colour first (it swaps the photos), then size (it never changes the photos). Keep the colour in `?colour=`. Show only the sizes that colour comes in; sold-out sizes stay visible but disabled.
-- Never show stock counts, only "Only N left" at 3 or fewer.
-- Every screen is responsive (375 / 768 / 1440) and has loading, error and empty states.
-- Accessibility: labels, `aria-describedby` for errors, keyboard support, visible focus, alt text on every image; pickers announce selected and sold-out options.
-- Images use `next/image` with the Cloudinary loader. Pass media keys, never URLs.
-- Prices always go through `formatAED()` from `src/lib/money.ts`. Never format money by hand.
-- The cart lives in the Zustand store in `features/cart`, one line per SKU. Never calculate payment totals in the browser.
-- Disable submit buttons and show a spinner while an action runs.
-
-### Components
-- Before creating a component, check in this order: `src/components/ui`, then the shadcn registry (`npx shadcn@latest add <name>`: card, badge, sheet, carousel, table and so on), then our existing components. Build new only when nothing fits. Every plan lists the components it reuses and each new one with its reason.
-- Build on primitives: a product card is `Card` + `Badge` + `next/image`, not a new styled `div`. Restyle through `className` or `cva` variants in a wrapper. Never hand-edit `src/components/ui` or copy its markup.
-- Adding a shadcn component needs no approval, unless it installs a new npm package (e.g. carousel adds Embla): ask first.
-- Where components live:
-  - `src/components/ui/`: shadcn only
-  - `src/components/store/`: shared storefront pieces (`StoreButton`, `Container`, `SectionHeading`, `Price`)
-  - `src/components/admin/`: shared admin pieces (`PageHeader`, `DataTable`, `StatusBadge`)
-  - `src/features/<domain>/components/`: used by one domain only. Once a second domain needs it, move it to a shared folder.
-- Pages (`src/app/**/page.tsx`) fetch data and compose components; no repeated markup in pages.
-- One job per component, typed props, content passed in as props (never hard-coded copy or data). Split files over about 150 lines.
-
-## Backend
-Applies to `src/services/**`, `src/lib/**`, `src/app/api/**`, `src/features/**/actions.ts`, `src/proxy.ts`, `src/instrumentation*.ts`, `src/sentry.*.config.ts` and `supabase/**`.
-
-### Structure
-- Database and third-party calls live in `src/services/*` with `import 'server-only'`.
-- Every Server Action and Route Handler: check auth, then validate with Zod, then call a service, then return a typed result.
-- Orders, stock, returns and refunds change only through Postgres functions that check the current state in one transaction.
-
-### Auth
-- Customers: `requireCustomer()` (Clerk `auth()`). Admins: `requireAdmin()` (`supabase.auth.getClaims()`, `aal2`, active admin).
-- `proxy.ts` only routes. Never rely on it for security. Its matcher excludes the Sentry tunnel (`/sentry-tunnel`).
-- Use the right Supabase client (see "Supabase Clients" in `docs/ARCHITECTURE.md`). The service client is only for webhooks, cron jobs and PDFs.
-
-### Database
-- RLS on every table, deny by default. Add pgTAP tests in `supabase/tests` for every new table or policy.
-- Never use `auth.uid()` in a policy. Compare `auth.jwt()->>'sub'` as text. Admin checks use `is_admin()`.
-- `security definer` functions set an explicit `search_path`.
-- Add new migrations; never edit an applied one. Run `npm run db:types` after schema changes.
-- Money is integer fils.
-
-### Catalogue and stock
-- One SKU = one colour in one size = one `product_variants` row. Cart lines, holds, order lines, returns and stock changes reference it.
-- Stock lives in `stock_levels`. Visitors and customers never read it; they get statuses from `variant_availability()`.
-- Lock `stock_levels` rows in variant ID order inside one transaction.
-- SKUs are stored in capitals, unique regardless of case, and locked once `first_sold_at` is set. Deactivate, never delete or reuse.
-- Colours, sizes, product colours and SKUs with history are hidden, never deleted.
-- Photos belong to a product colour; product photo keys must sit inside `products/{productId}/{productColourId}/`.
-
-### Payments
-- Only the signed Stripe webhook marks orders paid.
-- Re-price everything on the server. Never trust browser prices, totals or stock.
-- Use idempotency keys on Stripe writes, store webhook event IDs, and make handlers safe to replay.
-- Never restock automatically.
-
-### Media and email
-- Media only through `src/services/media`; store keys. Return photos are `authenticated` uploads shown through 1-hour signed links.
-- One-time emails write a unique `email_log` row before sending.
-
-### Errors and monitoring
-- Return typed errors to the UI. Never leak stack traces or internal details.
-- Expected errors (validation, sold out, not allowed) aren't reported to Sentry.
-- Report unexpected errors with `Sentry.captureException`, tagged with IDs (`order_id`, `return_id`, `refund_id`, `job`). Never send names, emails, phone numbers or addresses.
-- Wrap the reconciliation job in `Sentry.withMonitor()`. Every cron job writes a `job_runs` row.
-
-## Testing
-Applies to `tests/**`, `supabase/tests/**` and `*.test.ts(x)` / `*.spec.ts` files.
-- `docs/TEST_PLAN.md` defines what each area must prove.
-- Unit tests (Vitest) for pure logic: money, VAT, SKU suggestion and validation, return eligibility, cart rules.
-- DB tests (pgTAP) for every RLS policy and Postgres function, including "customer A can't read customer B", "an admin without aal2 is denied", "visitors can't read stock counts", duplicate SKUs in any letter case, and a SKU pointing at another product's colour.
-- Integration tests for webhooks with the Stripe CLI and local Supabase. Replaying an event must change nothing.
-- E2E tests (Playwright) for each vertical slice, with axe checks on key pages. Cover colour switching (photos swap, sizes change) and sold-out sizes.
-- Use the Stripe test cards in `docs/TEST_PLAN.md`. Never use live keys in tests.
-- Sentry stays off in tests (no DSN). Never send test errors to the production environment.
-- Keep tests deterministic: seeded data, no dependence on test order, controlled clocks for expiry tests.
-- After implementing: `npm run typecheck`, `npm run lint`, `npm run check:tokens`, `npm test`, plus the relevant `test:db`, `test:integration` and `test:e2e`.
-- Fix failing tests before continuing. Every bug fix adds a test that would have caught it.
-
-## Git
-- Never run `git add`, `git commit`, `git push`, `git reset`, `git rebase`, `git stash`, `git branch`, `git checkout -b`, `git switch -c` or `gh pr create` unless I ask for it in that message. When I ask for a commit message or a branch name, only write it.
-- Never commit `.env*` files except `.env.example`.
-- For a commit message, read `git diff --staged` (if nothing is staged, the unstaged changes, and say so). If it mixes unrelated work, suggest splitting it.
-
-### Branch names
-Format: `<prefix>/TASK-0xx-short-description`. Leave out the task ID only when there's no task.
-- Prefixes: `feature/`, `bugfix/`, `hotfix/` (urgent production fix), `design/` (UI or UX only), `refactor/` (no behaviour change), `test/` (tests only), `doc/` (docs only).
-- Lowercase words joined by hyphens (the task ID stays in capitals), no spaces or underscores, under about 50 characters.
-- Describe the main change. No generic words like `update`, `changes`, `stuff` or `misc`.
-- One branch per task, from the latest `main`. Suggest its name at the start of every task plan.
-- Examples: `feature/TASK-012-home-page`, `bugfix/TASK-031-stock-hold-expiry`.
-
-### Commit messages
-Format: `<type>(<scope>): <subject>`, a blank line, the body, a blank line, the footer.
-- Header required, scope optional. No line over 100 characters.
-- Types: `feat`, `fix`, `docs`, `style` (formatting only), `refactor`, `perf`, `test`, `chore` (build, tooling, dependencies).
-- Scope: the area changed, e.g. `home`, `cart`, `checkout`, `admin`, `stock`, `db`, `theme`.
-- Subject: imperative ("add", not "added" or "adds"), lowercase first letter, no full stop.
-- Body: imperative; why the change was made and how it differs from before.
-- Footer: `BREAKING CHANGE: <what breaks and how to migrate>`, `Closes #<issue>`, and the TASK-0xx it finishes.
-- Revert: `revert: <header of the reverted commit>`, with the body `This reverts commit <hash>.`
-
-### Pull requests
-- Only when I say "raise pull request": push the current branch and open a PR into `main` with `gh pr create`. Never merge, close or approve a PR, and never push to `main`.
-- First check: everything is committed, the branch is up to date with `main`, and the checks from Testing pass. If not, don't raise it; tell me what's wrong.
-- Title: the commit header format (`feat(home): add hero banner`). Body: the headings in `.github/pull_request_template.md` (What, Why, How, Testing, Screenshots, Anything else) in short, explicit sentences. Explain the change before linking the TASK; never just "see TASK-012".
-- Testing: commands run with results, manual checks, and untested edge cases with their risk. UI changes: screenshots at 375, 768 and 1440.
-- One task per PR; past about 400 changed lines (excluding generated files and lockfiles), suggest splitting. No secrets, keys or customer data anywhere in a PR.
-- If `gh` isn't set up, give me the title and body to paste; otherwise reply with the PR link.
+- Never generate, suggest or change the client's SKUs, style codes or any value from their stock sheet. Use them exactly as given (ADR-029).
+- Never run git commands unless I ask in that message (`.agents/rules/git.md`).
 
 ## After each task, report
 1. Files changed
