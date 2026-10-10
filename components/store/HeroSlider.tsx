@@ -10,8 +10,9 @@ import {
 } from "@/components/ui/carousel"
 
 export function HeroSlider() {
-  const pluginAutoplay = React.useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: false })
+  const pluginAutoplay = React.useMemo(
+    () => Autoplay({ delay: 3000, stopOnInteraction: false }),
+    []
   )
 
   type Slide = {
@@ -46,7 +47,7 @@ export function HeroSlider() {
   return (
     <section className="relative w-full">
       <Carousel
-        plugins={[pluginAutoplay.current]}
+        plugins={[pluginAutoplay]}
         className="w-full"
         opts={{ loop: true }}
       >
