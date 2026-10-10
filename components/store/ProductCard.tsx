@@ -16,14 +16,7 @@ export interface ProductCardProps {
 export function ProductCard({ name, price, imageSrc, href, brand, compareAtPrice }: ProductCardProps) {
   return (
     <div className="group relative flex flex-col w-full">
-      {/* The main hit area link */}
-      <Link 
-        href={href} 
-        className="absolute inset-0 z-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" 
-        aria-label={`View ${name}`}
-      >
-        <span className="sr-only">View {name}</span>
-      </Link>
+
 
       {/* Image container and badges */}
       <div className="relative w-full">
@@ -69,6 +62,15 @@ export function ProductCard({ name, price, imageSrc, href, brand, compareAtPrice
           )}
         </div>
       </div>
+      
+      {/* The main hit area link */}
+      <Link 
+        href={href} 
+        className="absolute inset-0 z-[1] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" 
+        aria-label={`View ${name}`}
+      >
+        <span className="sr-only">View {name}</span>
+      </Link>
     </div>
   )
 }

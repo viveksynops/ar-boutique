@@ -2,7 +2,7 @@ import { AnnouncementBar } from "@/components/store/AnnouncementBar"
 import { StoreHeader } from "@/components/store/StoreHeader"
 import { StoreFooter } from "@/components/store/StoreFooter"
 import { ProductCard } from "@/components/store/ProductCard"
-import { SidebarFilters } from "@/features/catalog/components/SidebarFilters"
+import { SidebarFilters } from "@/components/store/SidebarFilters"
 import {
   Select,
   SelectContent,
@@ -48,7 +48,7 @@ const MOCK_PRODUCTS = [
 
 
 
-export default function ShopPage() {
+export default function CollectionPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -83,7 +83,7 @@ export default function ShopPage() {
         <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
           
           {/* Desktop Sidebar */}
-          <div data-lenis-prevent className="hidden md:block w-52 shrink-0 sticky top-24 self-start h-[calc(100vh-10rem)] overflow-y-auto overscroll-contain pr-4 pb-8 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="hidden md:block w-52 shrink-0 sticky top-24 self-start h-[calc(100vh-10rem)] overflow-y-auto overscroll-contain pr-4 pb-8 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             <SidebarFilters />
           </div>
 
@@ -99,7 +99,7 @@ export default function ShopPage() {
                       Filter
                   </SheetTrigger>
                   <SheetContent side="left" className="w-[300px] sm:w-[350px]">
-                    <div data-lenis-prevent className="p-6 pt-12 h-full overflow-y-auto overscroll-contain pb-24">
+                    <div className="p-6 pt-12 h-full overflow-y-auto overscroll-contain pb-24">
                       <h2 className="font-heading text-xl mb-6">Filters</h2>
                       <SidebarFilters />
                     </div>
@@ -133,7 +133,7 @@ export default function ShopPage() {
                   compareAtPrice={prod.compareAtPrice}
                   price={prod.price}
                   imageSrc={prod.img}
-                  href="/products/product-slug"
+                  href={`/collections/${prod.name.toLowerCase().replace(/\s+/g, '-')}`}
                 />
               ))}
             </div>

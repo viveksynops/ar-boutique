@@ -1,4 +1,4 @@
-﻿import { AnnouncementBar } from "@/components/store/AnnouncementBar"
+import { AnnouncementBar } from "@/components/store/AnnouncementBar"
 import { StoreHeader } from "@/components/store/StoreHeader"
 import { HeroSlider } from "@/components/store/HeroSlider"
 import { SectionHeading } from "@/components/store/SectionHeading"
@@ -71,7 +71,7 @@ export default function Home() {
                     compareAtPrice={prod.compareAtPrice}
                     price={prod.price}
                     imageSrc={prod.img}
-                    href="/products/product-slug"
+                    href={`/collections/${prod.name.toLowerCase().replace(/\s+/g, '-')}`}
                   />
                 </CarouselItem>
               ))}
