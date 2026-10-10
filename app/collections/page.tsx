@@ -2,7 +2,6 @@ import { AnnouncementBar } from "@/components/store/AnnouncementBar"
 import { StoreHeader } from "@/components/store/StoreHeader"
 import { StoreFooter } from "@/components/store/StoreFooter"
 import { ProductCard } from "@/components/store/ProductCard"
-import { StoreButton } from "@/components/store/StoreButton"
 import { SidebarFilters } from "@/features/catalog/components/SidebarFilters"
 import {
   Select,
