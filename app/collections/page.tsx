@@ -99,7 +99,7 @@ export default function ShopPage() {
                       Filter
                   </SheetTrigger>
                   <SheetContent side="left" className="w-[300px] sm:w-[350px]">
-                    <div className="p-6 pt-12">
+                    <div data-lenis-prevent className="p-6 pt-12 h-full overflow-y-auto overscroll-contain pb-24">
                       <h2 className="font-heading text-xl mb-6">Filters</h2>
                       <SidebarFilters />
                     </div>
