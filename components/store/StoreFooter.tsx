@@ -1,4 +1,4 @@
-import Link from "next/link"
+﻿import Link from "next/link"
 import Image from "next/image"
 import { TrustStrip } from "@/components/store/TrustStrip"
 
@@ -21,7 +21,7 @@ export function StoreFooter() {
             <h4 className="text-[14px] font-medium mb-6 text-foreground tracking-wide">Explore</h4>
             <ul className="flex flex-col gap-4 text-[14px] text-muted-foreground">
               <li><Link href="/" className="hover:text-foreground transition-colors">Home</Link></li>
-              <li><Link href="/shop" className="hover:text-foreground transition-colors">Collections</Link></li>
+              <li><Link href="/collections" className="hover:text-foreground transition-colors">Collections</Link></li>
               <li><Link href="/about" className="hover:text-foreground transition-colors">About</Link></li>
               <li><Link href="/contact" className="hover:text-foreground transition-colors">Contact Us</Link></li>
             </ul>
@@ -44,7 +44,7 @@ export function StoreFooter() {
         </div>
         <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-[13px] text-muted-foreground tracking-wide">
-            © 2026 AR BOUTIQUE. All Rights Reserved.
+            Â© 2026 AR BOUTIQUE. All Rights Reserved.
           </p>
           <div className="flex gap-6">
             <span className="text-[11px] font-semibold tracking-wider text-muted-foreground">VISA</span>

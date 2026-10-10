@@ -3,22 +3,35 @@
 import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { usePathname } from "next/navigation"
 import { Search, User, ShoppingBag, Menu } from "lucide-react"
 
 export function StoreHeader() {
+  const pathname = usePathname()
+  const isHomePage = pathname === "/"
+  
   const [isScrolled, setIsScrolled] = React.useState(false)
+  const [isHovered, setIsHovered] = React.useState(false)
 
   React.useEffect(() => {
+    if (!isHomePage) return
+    
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20)
     }
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [isHomePage])
+
+  const isActive = !isHomePage || isScrolled || isHovered
 
   return (
-    <header className={`sticky top-0 z-50 w-full transition-colors duration-300 ${isScrolled ? "bg-background/95 backdrop-blur border-b border-border supports-[backdrop-filter]:bg-background/60 text-foreground" : "border-transparent text-white"}`}>
-      <div className={`absolute top-0 left-0 right-0 h-32 -z-10 bg-gradient-to-b from-black/70 to-transparent transition-opacity duration-300 pointer-events-none ${isScrolled ? "opacity-0" : "opacity-100"}`} />
+    <header 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`sticky top-0 z-50 w-full transition-colors duration-300 ${isActive ? "bg-background/95 backdrop-blur border-b border-border supports-[backdrop-filter]:bg-background/60 text-foreground" : "border-transparent text-white"}`}
+    >
+      <div className={`absolute top-0 left-0 right-0 h-32 -z-10 bg-gradient-to-b from-black/70 to-transparent transition-opacity duration-300 pointer-events-none ${isActive ? "opacity-0" : "opacity-100"}`} />
       
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4 lg:hidden">
@@ -29,16 +42,16 @@ export function StoreHeader() {
 
         <div className="flex-1 lg:flex-none">
           <Link href="/" className="inline-block pt-1">
-            <Image src="/images/logo.png" alt="AR Boutique" width={300} height={120} unoptimized className={`h-14 sm:h-16 w-auto transition-all duration-300 ${!isScrolled ? "brightness-0 invert drop-shadow-md" : ""}`} />
+            <Image src="/images/logo.png" alt="AR Boutique" width={300} height={120} unoptimized className={`h-14 sm:h-16 w-auto transition-all duration-300 ${!isActive ? "brightness-0 invert drop-shadow-md" : ""}`} />
           </Link>
         </div>
 
         <nav className="hidden lg:flex flex-1 justify-center gap-8 text-[15px] font-normal">
-          <Link href="/" className="hover:text-muted-foreground transition-colors">Home</Link>
-          <Link href="/shop" className="hover:text-muted-foreground transition-colors">Collections</Link>
-          <Link href="/journal" className="hover:text-muted-foreground transition-colors">Journal</Link>
-          <Link href="/about" className="hover:text-muted-foreground transition-colors">About</Link>
-          <Link href="/contact" className="hover:text-muted-foreground transition-colors">Contact Us</Link>
+          <Link href="/" className="hover:opacity-70 transition-opacity">Home</Link>
+          <Link href="/collections" className="hover:opacity-70 transition-opacity">Collections</Link>
+          <Link href="/journal" className="hover:opacity-70 transition-opacity">Journal</Link>
+          <Link href="/about" className="hover:opacity-70 transition-opacity">About</Link>
+          <Link href="/contact" className="hover:opacity-70 transition-opacity">Contact Us</Link>
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-4">

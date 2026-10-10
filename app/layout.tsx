@@ -11,13 +11,18 @@ export const metadata: Metadata = {
   },
 };
 
+import { SmoothScroll } from "@/components/store/SmoothScroll";
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
       className={cn("h-full", "antialiased", "font-sans", fontSans.variable, fontHeading.variable, fontMono.variable)}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <SmoothScroll />
+        {children}
+      </body>
     </html>
   );
 }

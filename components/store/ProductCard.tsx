@@ -1,68 +1,74 @@
+"use client"
+
 import Link from "next/link"
 import Image from "next/image"
 import { Plus } from "lucide-react"
-import { Card, CardContent, CardTitle } from "@/components/ui/card"
 
 export interface ProductCardProps {
   name: string
   price: string
   imageSrc: string
   href: string
-  swatches?: string[]
   brand?: string
   compareAtPrice?: string
-  savePercentage?: string
-  isNew?: boolean
-  isSale?: boolean
 }
 
-export function ProductCard({ name, price, imageSrc, href, swatches, brand, compareAtPrice, savePercentage, isNew, isSale }: ProductCardProps) {
+export function ProductCard({ name, price, imageSrc, href, brand, compareAtPrice }: ProductCardProps) {
   return (
-    <Card className="group flex flex-col h-full overflow-hidden border-x border-b border-t-0 border-border/60 bg-background rounded-none shadow-none p-0">
-      <div className="relative aspect-[4/5] w-full overflow-hidden bg-muted block shrink-0">
-        <Link href={href} className="absolute inset-0 z-0">
+    <div className="group relative flex flex-col w-full">
+      {/* The main hit area link */}
+      <Link 
+        href={href} 
+        className="absolute inset-0 z-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" 
+        aria-label={`View ${name}`}
+      >
+        <span className="sr-only">View {name}</span>
+      </Link>
+
+      {/* Image container and badges */}
+      <div className="relative w-full">
+        <div className="relative aspect-[2/3] w-full overflow-hidden bg-muted rounded-sm">
           <Image 
             src={imageSrc} 
             alt={name} 
             fill 
+            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
+            unoptimized
           />
-        </Link>
-        {/* Plus Button Overlay */}
-        <button className="absolute top-3 right-3 z-10 w-9 h-9 bg-background/95 backdrop-blur rounded-full flex items-center justify-center text-foreground hover:bg-background transition-colors border border-border shadow-sm">
-          <Plus className="w-5 h-5 opacity-70" strokeWidth={1.5} />
+        </div>
+
+        {/* Quick Add Button */}
+        <button 
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            // Add to cart logic will go here
+          }}
+          aria-label={`Add ${name} to bag`}
+          className="absolute top-2 right-2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/70 backdrop-blur-sm text-foreground shadow-sm transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring before:absolute before:-inset-2"
+        >
+          <Plus className="h-5 w-5 opacity-80" strokeWidth={1.5} />
         </button>
       </div>
-      <CardContent className="flex flex-col gap-1.5 pt-3 pb-2 px-3 flex-grow">
+      
+      {/* Text Content */}
+      <div className="flex flex-col gap-0.5 pt-3">
         {brand && (
-          <span className="text-[12px] text-muted-foreground tracking-wide">{brand}</span>
+          <span className="text-[13px] text-muted-foreground font-sans">{brand}</span>
         )}
-        <Link href={href} className="hover:underline">
-          <CardTitle className="font-heading text-lg font-normal leading-tight line-clamp-1 text-foreground">
+        <div className="mt-0.5 relative z-10">
+          <h3 className="font-sans text-[15px] font-medium leading-tight truncate text-foreground pointer-events-none" title={name}>
             {name}
-          </CardTitle>
-        </Link>
-        <div className="flex flex-wrap items-center gap-2 mt-1">
+          </h3>
+        </div>
+        <div className="flex flex-wrap items-baseline gap-2 mt-0.5">
+          <span className="text-[15px] font-bold text-foreground font-sans">{price}</span>
           {compareAtPrice && (
-            <span className="text-sm text-muted-foreground line-through opacity-70">{compareAtPrice}</span>
-          )}
-          <span className="text-[15px] font-semibold text-foreground tracking-tight">{price}</span>
-          {savePercentage && (
-            <span className="bg-secondary/50 px-2 py-1 text-[11px] font-medium text-foreground ml-auto rounded-sm">{savePercentage}</span>
+            <span className="text-[13px] text-muted-foreground line-through font-sans">{compareAtPrice}</span>
           )}
         </div>
-        {swatches && swatches.length > 0 && (
-          <div className="flex gap-2 mt-3">
-            {swatches.map((swatch, idx) => (
-              <div 
-                key={idx} 
-                className="w-4 h-4 rounded-full border border-border/60 shadow-sm" 
-                style={{ backgroundColor: swatch }} 
-              />
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

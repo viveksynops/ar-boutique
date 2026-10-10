@@ -1,6 +1,5 @@
-import { AnnouncementBar } from "@/components/store/AnnouncementBar"
+﻿import { AnnouncementBar } from "@/components/store/AnnouncementBar"
 import { StoreHeader } from "@/components/store/StoreHeader"
-import { HeroBanner } from "@/components/store/HeroBanner"
 import { HeroSlider } from "@/components/store/HeroSlider"
 import { SectionHeading } from "@/components/store/SectionHeading"
 import { CategoryCircle } from "@/features/categories/components/CategoryCircle"
@@ -48,7 +47,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-6 md:py-8 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section className="py-6 md:py-8 mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
           <SectionHeading className="mb-8 md:mb-12">New Arrivals</SectionHeading>
           <Carousel
             opts={{
@@ -56,7 +55,7 @@ export default function Home() {
             }}
             className="w-full relative mb-8 md:mb-12"
           >
-            <CarouselContent className="-ml-4 md:-ml-6">
+            <CarouselContent className="-ml-2 md:-ml-3">
               {[
                 { brand: "AR Boutique Exclusive", name: "Midnight Blue Fusion Saree Gown", compareAtPrice: "349.00 AED", price: "299.99 AED", savePercentage: "Save 14%", img: "/images/new_arrival_1.jpg", isNew: true, isSale: true },
                 { brand: "AR Boutique Exclusive", name: "Sunshine Yellow Anarkali Suit", compareAtPrice: "299.00 AED", price: "269.99 AED", savePercentage: "Save 10%", img: "/images/new_arrival_2.jpg", isNew: true, isSale: true },
@@ -65,17 +64,14 @@ export default function Home() {
                 { brand: "AR Boutique Exclusive", name: "Ivory Embroidered Anarkali Gown", compareAtPrice: "279.00 AED", price: "249.99 AED", savePercentage: "Save 10%", img: "/images/new_arrival_5.jpg", isNew: true, isSale: true },
                 { brand: "AR Boutique Exclusive", name: "Midnight Blue Fusion Saree Gown", compareAtPrice: "349.00 AED", price: "299.99 AED", savePercentage: "Save 14%", img: "/images/new_arrival_1.jpg", isNew: true, isSale: true },
               ].map((prod, i) => (
-                <CarouselItem key={i} className="pl-4 md:pl-6 basis-[45%] sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
+                <CarouselItem key={i} className="pl-2 md:pl-3 basis-[60%] sm:basis-[45%] md:basis-1/3 xl:basis-1/4">
                   <ProductCard
                     brand={prod.brand}
                     name={prod.name}
                     compareAtPrice={prod.compareAtPrice}
                     price={prod.price}
-                    savePercentage={prod.savePercentage}
                     imageSrc={prod.img}
                     href="/products/product-slug"
-                    isNew={prod.isNew}
-                    isSale={prod.isSale}
                   />
                 </CarouselItem>
               ))}
